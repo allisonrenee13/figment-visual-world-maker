@@ -451,6 +451,22 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTool, activeStamp, colors.stroke, sw]);
 
+    // --- Place Road (two-click) ---
+    const placeRoad = useCallback((x1: number, y1: number, x2: number, y2: number) => {
+      const canvas = fabricRef.current;
+      if (!canvas) return;
+      const road = new Line([x1, y1, x2, y2], {
+        stroke: colors.stroke,
+        strokeWidth: 1.5,
+        strokeDashArray: [8, 4],
+        selectable: false,
+        evented: false,
+      });
+      canvas.add(road);
+      canvas.renderAll();
+      saveState();
+    }, [colors.stroke, saveState]);
+
     // --- Place Feature Stamp ---
     const placeStamp = useCallback((type: FeatureStamp, x: number, y: number) => {
       const canvas = fabricRef.current;
@@ -521,6 +537,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               strokeWidth: 1.5,
               selectable: false,
               evented: false,
+            });
+          (river as any)._isRiver = true;
+          (river as any)._isFeature = true;
             }
           );
           canvas.add(river);
