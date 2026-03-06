@@ -7,18 +7,50 @@ import IslaSerranoMap from "./IslaSerranoMap";
 import CapeCodeMap from "./CapeCodeMap";
 import CommunityMap from "./CommunityMap";
 import PrythianMap from "./PrythianMap";
+import MarkupModal from "./markup/MarkupModal";
+import type { MarkupImage } from "./markup/types";
+import refKeyBiscayne from "@/assets/ref-key-biscayne.jpg";
+import refMarcoIsland from "@/assets/ref-marco-island.jpg";
 
 type BuilderState = "idle" | "generating" | "preview";
 
 const demoDescriptions: Record<string, string> = {
   "isla-serrano":
-    "A long narrow barrier island running north to south. Atlantic Ocean on the east with open beaches, calm bay on the west with mangroves and docks. One causeway entering from the north — the only way on or off. A grand faded hotel on the northern beach called The Solano Hotel. A lighthouse at the remote southern tip called Cape Serrano Lighthouse. A small village in the centre with a green, a yacht club on the bay side, and a beach club on the ocean side. Feels like Florida Keys warmth meets Ogunquit Maine — storybook, sun-bleached, lush.",
+    "A long narrow barrier island. Atlantic Ocean on the east, calm bay on the west.",
   "paper-palace":
-    "A curved peninsula reaching into the Atlantic — Cape Cod, Massachusetts. Summer houses lining a freshwater pond. Dense woods to the north. A boathouse tucked along the shore. Winding sandy roads connecting everything.",
+    "A curved peninsula reaching into the Atlantic — Cape Cod, Massachusetts. Summer houses lining a freshwater pond. Dense woods to the north.",
   "the-giver":
-    "A perfectly ordered circular community. Concentric rings of identical family dwelling units. An auditorium at the centre. The Annex at the boundary. A river marking the edge — beyond it, Elsewhere.",
+    "A perfectly ordered circular community. Concentric rings of identical family dwelling units. An auditorium at the centre.",
   "acotar":
-    "The realm of Prythian. Seven courts divided by magic. The Spring Court lush and green to the east. The Night Court dark and star-filled to the northwest. Under the Mountain looms at the centre-north. The Wall separates faerie from the mortal lands to the south.",
+    "The realm of Prythian. Seven courts divided by magic. The Spring Court lush and green to the east.",
+};
+
+const demoNotes: Record<string, string> = {
+  "isla-serrano": "Want to keep the causeway feel from Key Biscayne. The lighthouse end is critical — remote, windswept. Village should feel like a New England harbour town dropped into tropical warmth.",
+};
+
+const createDemoImages = (projectId: string): MarkupImage[] => {
+  if (projectId === "isla-serrano") {
+    return [
+      {
+        id: "key-biscayne",
+        src: refKeyBiscayne,
+        label: "Key Biscayne",
+        markups: [],
+        notes: "Use the overall island shape and the causeway entry from the north. The southern tip is perfect for the lighthouse. Ignore the northern developed area — my island is quieter.",
+        hasMarkup: false,
+      },
+      {
+        id: "marco-island",
+        src: refMarcoIsland,
+        label: "Marco Island",
+        markups: [],
+        notes: "Love the overall silhouette of this — slightly wider than Key Biscayne. Use as the base shape.",
+        hasMarkup: false,
+      },
+    ];
+  }
+  return [];
 };
 
 const UnifiedMapBuilder = () => {
@@ -27,34 +59,71 @@ const UnifiedMapBuilder = () => {
 
   const defaultDesc = demoDescriptions[currentProject.id] || "";
   const [description, setDescription] = useState(defaultDesc);
-  const [referenceImages, setReferenceImages] = useState<string[]>([]);
+  const [creationNotes, setCreationNotes] = useState(demoNotes[currentProject.id] || "");
+  const [referenceImages, setReferenceImages] = useState<MarkupImage[]>(
+    createDemoImages(currentProject.id)
+  );
   const [state, setState] = useState<BuilderState>("idle");
   const [versions, setVersions] = useState<number[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [markupOpen, setMarkupOpen] = useState(false);
+  const [markupInitialId, setMarkupInitialId] = useState<string | undefined>();
 
   const handleAddImage = () => {
+    if (referenceImages.length >= 3) return;
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.multiple = true;
     input.onchange = (e) => {
       const files = (e.target as HTMLInputElement).files;
-      if (!files) return;
-      Array.from(files).forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          if (ev.target?.result) {
-            setReferenceImages((prev) => [...prev, ev.target!.result as string]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          const newImg: MarkupImage = {
+            id: `ref-${Date.now()}`,
+            src: ev.target.result as string,
+            label: `Reference ${referenceImages.length + 1}`,
+            markups: [],
+            notes: "",
+            hasMarkup: false,
+          };
+          setReferenceImages((prev) => [...prev, newImg]);
+        }
+      };
+      reader.readAsDataURL(file);
     };
     input.click();
   };
 
-  const handleRemoveImage = (index: number) => {
-    setReferenceImages((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveImage = (id: string) => {
+    setReferenceImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
+  const handleOpenMarkup = (imageId?: string) => {
+    setMarkupInitialId(imageId);
+    setMarkupOpen(true);
+  };
+
+  const handleSaveMarkup = (updatedImages: MarkupImage[]) => {
+    setReferenceImages(updatedImages);
+  };
+
+  const handleMarkUpGeneratedMap = () => {
+    // Add the generated map as a reference image for markup
+    const generatedMapImg: MarkupImage = {
+      id: "generated-map",
+      src: "/placeholder.svg", // In real app, this would be a screenshot of the generated map
+      label: "Generated Map",
+      markups: [],
+      notes: "",
+      hasMarkup: false,
+    };
+    const allImages = [generatedMapImg, ...referenceImages.filter((img) => img.id !== "generated-map")];
+    setReferenceImages(allImages);
+    setMarkupInitialId("generated-map");
+    setMarkupOpen(true);
   };
 
   const handleGenerate = () => {
@@ -98,44 +167,89 @@ const UnifiedMapBuilder = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your location, geography, and key places. Be as detailed or loose as you like. You can keep adding detail after seeing the preview."
-              className="min-h-[200px] text-sm border-border bg-card resize-none leading-relaxed"
+              className="min-h-[160px] text-sm border-border bg-card resize-none leading-relaxed"
             />
           </div>
 
-          {/* Section 2: Reference Images */}
+          {/* Section 2: Creation Notes */}
           <div className="space-y-2">
             <label className="text-sm font-serif font-semibold text-foreground">
-              Add reference images
+              Creation Notes
             </label>
-            <p className="text-xs text-muted-foreground">
-              Maps, photos, satellite views, sketches — anything that captures the feel or shape of your world
-            </p>
-            <div className="flex gap-3 overflow-x-auto pb-2 pt-1">
-              {referenceImages.map((img, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-lg border border-border overflow-hidden flex-shrink-0 group">
-                  <img src={img} alt={`Reference ${i + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => handleRemoveImage(i)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-foreground/70 text-background rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={handleAddImage}
-                className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-muted-foreground/50 flex flex-col items-center justify-center gap-1 flex-shrink-0 transition-colors"
-              >
-                <Plus className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">Add ref</span>
-              </button>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              The more references you add, the more accurate your map becomes.
-            </p>
+            <Textarea
+              value={creationNotes}
+              onChange={(e) => setCreationNotes(e.target.value)}
+              placeholder="Private notes for yourself — what you want to keep, change, or figure out later."
+              className="min-h-[80px] text-sm border-border bg-muted/30 resize-none leading-relaxed text-muted-foreground"
+            />
           </div>
 
-          {/* Section 3: Generate */}
+          {/* Section 3: Reference Images */}
+          <div className="space-y-2">
+            <label className="text-sm font-serif font-semibold text-foreground">
+              Reference Images
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Upload up to 3 reference images — maps, satellite views, photos, sketches
+            </p>
+            <div className="flex gap-3 pt-1">
+              {/* Image slots */}
+              {referenceImages.map((img) => (
+                <div key={img.id} className="flex flex-col items-center gap-1.5">
+                  <div className="relative w-24 h-24 rounded-lg border border-border overflow-hidden group">
+                    <img src={img.src} alt={img.label} className="w-full h-full object-cover" />
+                    {/* Remove button */}
+                    <button
+                      onClick={() => handleRemoveImage(img.id)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-foreground/70 text-background rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                    {/* Markup button */}
+                    <button
+                      onClick={() => handleOpenMarkup(img.id)}
+                      className="absolute bottom-1 right-1 w-6 h-6 bg-background/90 border border-border rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Pencil className="h-3 w-3 text-foreground" />
+                    </button>
+                    {/* Has markup indicator */}
+                    {img.hasMarkup && (
+                      <div className="absolute top-1 left-1 w-3 h-3 rounded-full bg-green-500 border border-background" />
+                    )}
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">{img.label}</span>
+                </div>
+              ))}
+              {/* Add slot */}
+              {referenceImages.length < 3 && (
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    onClick={handleAddImage}
+                    className="w-24 h-24 rounded-lg border-2 border-dashed border-border hover:border-muted-foreground/50 flex flex-col items-center justify-center gap-1 transition-colors"
+                  >
+                    <Plus className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground">Add image</span>
+                  </button>
+                  <span className="text-[11px] text-muted-foreground">
+                    Reference {referenceImages.length + 1}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Mark Up Images button */}
+            {referenceImages.length > 0 && (
+              <button
+                onClick={() => handleOpenMarkup()}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-2"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>Mark Up Images</span>
+              </button>
+            )}
+          </div>
+
+          {/* Section 4: Generate */}
           <div className="space-y-3">
             <Button
               onClick={handleGenerate}
@@ -178,7 +292,6 @@ const UnifiedMapBuilder = () => {
 
         {state === "generating" && (
           <div className="flex-1 flex flex-col items-center justify-center p-10 gap-4">
-            {/* Pen sketching animation */}
             <div className="relative w-16 h-16">
               <svg viewBox="0 0 64 64" className="w-full h-full">
                 <path
@@ -192,7 +305,6 @@ const UnifiedMapBuilder = () => {
                 >
                   <animate attributeName="stroke-dashoffset" from="100" to="0" dur="1.5s" repeatCount="indefinite" />
                 </path>
-                {/* Pen nib */}
                 <circle r="3" fill="hsl(var(--secondary))">
                   <animateMotion
                     path="M 8 48 Q 20 20, 32 36 Q 44 52, 56 16"
@@ -209,9 +321,19 @@ const UnifiedMapBuilder = () => {
 
         {state === "preview" && (
           <div className="flex-1 flex flex-col p-6">
-            {/* Map */}
             <div className="flex-1 flex items-start justify-center">
               {renderPreviewMap()}
+            </div>
+
+            {/* Mark Up This Map */}
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={handleMarkUpGeneratedMap}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>Mark Up This Map</span>
+              </button>
             </div>
 
             {/* Action buttons */}
@@ -228,7 +350,6 @@ const UnifiedMapBuilder = () => {
                 </button>
               </div>
 
-              {/* Version history */}
               {versions.length > 1 && (
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Previous versions</span>
@@ -249,6 +370,15 @@ const UnifiedMapBuilder = () => {
           </div>
         )}
       </div>
+
+      {/* Markup Modal */}
+      <MarkupModal
+        open={markupOpen}
+        onClose={() => setMarkupOpen(false)}
+        images={referenceImages}
+        onSave={handleSaveMarkup}
+        initialSelectedId={markupInitialId}
+      />
     </div>
   );
 };
