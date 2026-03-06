@@ -266,8 +266,11 @@ export default function LandingPage() {
         <p className="font-serif italic text-foreground/50 text-sm md:text-base mb-6">
           From the world in your head to something you can actually see.
         </p>
-        <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-8 leading-relaxed">
+        <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-2 leading-relaxed">
           Your visual companion while you write. Render your story's setting as a clean line drawing, see what is in your head, plan where everything happens, and write with clarity.
+        </p>
+        <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-8 leading-relaxed font-medium">
+          Render your world. Write your story.
         </p>
         <div className="flex flex-col sm:flex-row items-center gap-3 mb-3">
           <Button className="bg-primary text-secondary font-medium rounded-full px-8 h-11 text-base">
