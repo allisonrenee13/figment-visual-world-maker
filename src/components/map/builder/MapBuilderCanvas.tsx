@@ -384,9 +384,22 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               });
 
               if (modified) {
-                // Force re-render by setting dirty
-                (obj as any).dirty = true;
-                obj.setCoords();
+                const newPathStr = pathData.map((seg: any[]) => seg.join(" ")).join(" ");
+                const newPath = new Path(newPathStr, {
+                  fill: "transparent",
+                  stroke: obj.stroke,
+                  strokeWidth: obj.strokeWidth,
+                  strokeLineCap: "round",
+                  strokeLineJoin: "round",
+                  strokeDashArray: obj.strokeDashArray as number[] | undefined,
+                  opacity: obj.opacity,
+                  selectable: false,
+                  evented: false,
+                });
+                if ((obj as any)._isFeature) (newPath as any)._isFeature = true;
+                if ((obj as any)._isRiver) (newPath as any)._isRiver = true;
+                canvas.remove(obj);
+                canvas.add(newPath);
               }
             });
             canvas.renderAll();
@@ -434,8 +447,22 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
                   seg[2] = py + ((prevY + nextY) / 2 - py) * influence;
                 }
               }
-              (obj as any).dirty = true;
-              obj.setCoords();
+              const newPathStr = pathData.map((seg: any[]) => seg.join(" ")).join(" ");
+              const newPath = new Path(newPathStr, {
+                fill: "transparent",
+                stroke: obj.stroke,
+                strokeWidth: obj.strokeWidth,
+                strokeLineCap: "round",
+                strokeLineJoin: "round",
+                strokeDashArray: obj.strokeDashArray as number[] | undefined,
+                opacity: obj.opacity,
+                selectable: false,
+                evented: false,
+              });
+              if ((obj as any)._isFeature) (newPath as any)._isFeature = true;
+              if ((obj as any)._isRiver) (newPath as any)._isRiver = true;
+              canvas.remove(obj);
+              canvas.add(newPath);
             });
             canvas.renderAll();
           });
@@ -486,7 +513,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             strokeWidth: 1.2,
             selectable: false,
             evented: false,
-            angle: Math.random() * 20 - 10,
+            angle: 0,
           });
           canvas.add(building);
           break;
@@ -566,13 +593,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         isLoadingRef.current = true;
         try {
           const result = await loadSVGFromString(svgString);
-          canvas.getObjects().forEach((obj) => {
-            if (!obj.excludeFromExport) canvas.remove(obj);
-          });
-          const group = util.groupSVGElements(result.objects.filter(Boolean) as FabricObject[]);
-          // Ungroup and add individual objects
-          if ((group as any).getObjects) {
-            (group as any).getObjects().forEach((obj: FabricObject) => {
+          canvas.getObjects()
+            .filter((o) => !o.excludeFromExport)
+            .forEach((o) => canvas.remove(o));
+
+          result.objects
+            .filter((obj): obj is FabricObject => obj !== null)
+            .forEach((obj) => {
               obj.set({
                 stroke: colors.stroke,
                 strokeWidth: sw,
@@ -582,18 +609,11 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               });
               canvas.add(obj);
             });
-          } else {
-            group.set({
-              stroke: colors.stroke,
-              strokeWidth: sw,
-              fill: "transparent",
-              selectable: false,
-              evented: false,
-            });
-            canvas.add(group);
-          }
+
           canvas.renderAll();
           saveState();
+        } catch (err) {
+          console.error("loadSVG failed:", err);
         } finally {
           isLoadingRef.current = false;
         }
