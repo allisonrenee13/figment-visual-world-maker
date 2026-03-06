@@ -11,7 +11,7 @@ export interface Pin {
   chapter: number;
   location: string;
   note: string;
-  x: number; // percentage position on map
+  x: number;
   y: number;
 }
 
@@ -19,13 +19,22 @@ export interface Character {
   id: string;
   name: string;
   initial: string;
+  role: string;
+  age: string;
+  firstAppears: number;
+  traits: string[];
+  notes: string;
+  photo: string | null;
 }
 
 export interface Location {
   id: string;
   name: string;
   description: string;
+  type: string;
+  firstAppears: number;
   eventCount: number;
+  photo: string | null;
 }
 
 export interface TimelineEvent {
@@ -70,18 +79,18 @@ export const projects: Project[] = [
       { id: "pp5", title: "The Boathouse", type: "location", chapter: 8, location: "Boathouse", note: "Hidden meetings, old secrets", x: 70, y: 70 },
     ],
     characters: [
-      { id: "c1", name: "Elle Bishop", initial: "E" },
-      { id: "c2", name: "Jonas", initial: "J" },
-      { id: "c3", name: "Peter", initial: "P" },
-      { id: "c4", name: "Wallace", initial: "W" },
-      { id: "c5", name: "Anna", initial: "A" },
+      { id: "c1", name: "Elle Bishop", initial: "E", role: "Protagonist", age: "50", firstAppears: 1, traits: ["Torn", "Passionate", "Haunted"], notes: "The narrator. Caught between two loves.", photo: null },
+      { id: "c2", name: "Jonas", initial: "J", role: "Supporting", age: "52", firstAppears: 1, traits: ["Magnetic", "Patient", "Tender"], notes: "Childhood love who returns.", photo: null },
+      { id: "c3", name: "Peter", initial: "P", role: "Supporting", age: "53", firstAppears: 1, traits: ["Steady", "Oblivious", "Kind"], notes: "Elle's husband.", photo: null },
+      { id: "c4", name: "Wallace", initial: "W", role: "Supporting", age: "75", firstAppears: 2, traits: ["Eccentric", "Wise", "Broken"], notes: "Elle's mother's partner.", photo: null },
+      { id: "c5", name: "Anna", initial: "A", role: "Supporting", age: "48", firstAppears: 3, traits: ["Loyal", "Sharp", "Protective"], notes: "Elle's sister.", photo: null },
     ],
     locations: [
-      { id: "l1", name: "The Paper Palace", description: "The weathered summer house where every summer returns", eventCount: 3 },
-      { id: "l2", name: "The Pond", description: "Still water reflecting decades of memory", eventCount: 2 },
-      { id: "l3", name: "The Woods", description: "Dense Cape Cod forest hiding old secrets", eventCount: 1 },
-      { id: "l4", name: "The Boathouse", description: "Hidden at the water's edge, scene of secret meetings", eventCount: 1 },
-      { id: "l5", name: "The Old Cape Road", description: "Winding road connecting all the landmarks of summer", eventCount: 0 },
+      { id: "l1", name: "The Paper Palace", description: "The weathered summer house where every summer returns", type: "House", firstAppears: 1, eventCount: 3, photo: null },
+      { id: "l2", name: "The Pond", description: "Still water reflecting decades of memory", type: "Landmark", firstAppears: 1, eventCount: 2, photo: null },
+      { id: "l3", name: "The Woods", description: "Dense Cape Cod forest hiding old secrets", type: "Landmark", firstAppears: 3, eventCount: 1, photo: null },
+      { id: "l4", name: "The Boathouse", description: "Hidden at the water's edge, scene of secret meetings", type: "Landmark", firstAppears: 8, eventCount: 1, photo: null },
+      { id: "l5", name: "The Old Cape Road", description: "Winding road connecting all the landmarks of summer", type: "Road", firstAppears: 1, eventCount: 0, photo: null },
     ],
     timeline: [
       { id: "t1", title: "Elle's Decision", chapter: 1, character: "Elle", characterInitial: "E", pinType: "plot", location: "The Pond" },
@@ -113,20 +122,20 @@ export const projects: Project[] = [
       { id: "g6", title: "The Giver's Annex", type: "character", chapter: 10, location: "The Annex", note: "Where all memories are held", x: 80, y: 55 },
     ],
     characters: [
-      { id: "c1", name: "Jonas", initial: "J" },
-      { id: "c2", name: "The Giver", initial: "G" },
-      { id: "c3", name: "Gabriel", initial: "B" },
-      { id: "c4", name: "Fiona", initial: "F" },
-      { id: "c5", name: "Asher", initial: "A" },
-      { id: "c6", name: "Jonas's Father", initial: "D" },
+      { id: "c1", name: "Jonas", initial: "J", role: "Protagonist", age: "12", firstAppears: 1, traits: ["Curious", "Brave", "Compassionate"], notes: "The Receiver of Memory.", photo: null },
+      { id: "c2", name: "The Giver", initial: "G", role: "Supporting", age: "Unknown", firstAppears: 10, traits: ["Wise", "Burdened", "Kind"], notes: "The previous Receiver.", photo: null },
+      { id: "c3", name: "Gabriel", initial: "B", role: "Supporting", age: "1", firstAppears: 3, traits: ["Innocent", "Special", "Vulnerable"], notes: "Baby Jonas saves.", photo: null },
+      { id: "c4", name: "Fiona", initial: "F", role: "Supporting", age: "12", firstAppears: 1, traits: ["Gentle", "Red-haired", "Caring"], notes: "Jonas's friend.", photo: null },
+      { id: "c5", name: "Asher", initial: "A", role: "Supporting", age: "12", firstAppears: 1, traits: ["Clumsy", "Cheerful", "Loyal"], notes: "Jonas's best friend.", photo: null },
+      { id: "c6", name: "Jonas's Father", initial: "D", role: "Supporting", age: "40", firstAppears: 1, traits: ["Nurturing", "Obedient", "Blind"], notes: "A Nurturer in the community.", photo: null },
     ],
     locations: [
-      { id: "l1", name: "The Community", description: "An ordered, controlled society of sameness", eventCount: 2 },
-      { id: "l2", name: "The Annex", description: "The Giver's dwelling at the edge of the community", eventCount: 2 },
-      { id: "l3", name: "Jonas's Family Unit", description: "A standard dwelling unit in the community", eventCount: 1 },
-      { id: "l4", name: "The River", description: "The boundary separating the community from Elsewhere", eventCount: 2 },
-      { id: "l5", name: "The Auditorium", description: "Where ceremonies and assignments take place", eventCount: 1 },
-      { id: "l6", name: "Elsewhere", description: "Beyond the boundary — the unknown", eventCount: 1 },
+      { id: "l1", name: "The Community", description: "An ordered, controlled society of sameness", type: "Landmark", firstAppears: 1, eventCount: 2, photo: null },
+      { id: "l2", name: "The Annex", description: "The Giver's dwelling at the edge of the community", type: "House", firstAppears: 10, eventCount: 2, photo: null },
+      { id: "l3", name: "Jonas's Family Unit", description: "A standard dwelling unit in the community", type: "House", firstAppears: 1, eventCount: 1, photo: null },
+      { id: "l4", name: "The River", description: "The boundary separating the community from Elsewhere", type: "Waterfront", firstAppears: 21, eventCount: 2, photo: null },
+      { id: "l5", name: "The Auditorium", description: "Where ceremonies and assignments take place", type: "Landmark", firstAppears: 7, eventCount: 1, photo: null },
+      { id: "l6", name: "Elsewhere", description: "Beyond the boundary — the unknown", type: "Landmark", firstAppears: 23, eventCount: 1, photo: null },
     ],
     timeline: [
       { id: "t1", title: "Ceremony of Twelve", chapter: 7, character: "Jonas", characterInitial: "J", pinType: "plot", location: "The Auditorium" },
@@ -160,21 +169,21 @@ export const projects: Project[] = [
       { id: "a7", title: "The Wall", type: "location", chapter: 4, location: "The Wall", note: "The boundary between worlds", x: 38, y: 55 },
     ],
     characters: [
-      { id: "c1", name: "Feyre Archeron", initial: "F" },
-      { id: "c2", name: "Tamlin", initial: "T" },
-      { id: "c3", name: "Lucien", initial: "L" },
-      { id: "c4", name: "Rhysand", initial: "R" },
-      { id: "c5", name: "Amarantha", initial: "A" },
-      { id: "c6", name: "Alis", initial: "S" },
+      { id: "c1", name: "Feyre Archeron", initial: "F", role: "Protagonist", age: "19", firstAppears: 1, traits: ["Fierce", "Creative", "Resilient"], notes: "The huntress who becomes more.", photo: null },
+      { id: "c2", name: "Tamlin", initial: "T", role: "Supporting", age: "500+", firstAppears: 4, traits: ["Powerful", "Possessive", "Wounded"], notes: "High Lord of the Spring Court.", photo: null },
+      { id: "c3", name: "Lucien", initial: "L", role: "Supporting", age: "300+", firstAppears: 5, traits: ["Witty", "Loyal", "Conflicted"], notes: "Tamlin's emissary and friend.", photo: null },
+      { id: "c4", name: "Rhysand", initial: "R", role: "Antagonist", age: "500+", firstAppears: 15, traits: ["Mysterious", "Calculating", "Hidden depths"], notes: "High Lord of the Night Court.", photo: null },
+      { id: "c5", name: "Amarantha", initial: "A", role: "Antagonist", age: "Unknown", firstAppears: 28, traits: ["Cruel", "Powerful", "Obsessive"], notes: "The tyrant Under the Mountain.", photo: null },
+      { id: "c6", name: "Alis", initial: "S", role: "Minor", age: "Unknown", firstAppears: 6, traits: ["Protective", "Honest", "Brave"], notes: "Feyre's servant at the Spring Court.", photo: null },
     ],
     locations: [
-      { id: "l1", name: "The Mortal Lands", description: "Feyre's impoverished homeland beyond the Wall", eventCount: 1 },
-      { id: "l2", name: "The Wall", description: "Ancient barrier between mortal and faerie realms", eventCount: 2 },
-      { id: "l3", name: "The Forest of Wolves", description: "Dense woodland where Feyre hunts to survive", eventCount: 1 },
-      { id: "l4", name: "The Spring Court Manor", description: "Tamlin's enchanted estate, beautiful and perilous", eventCount: 2 },
-      { id: "l5", name: "Under the Mountain", description: "Amarantha's dark domain beneath the earth", eventCount: 2 },
-      { id: "l6", name: "The Night Court", description: "Glimpsed realm of starlight and shadow", eventCount: 0 },
-      { id: "l7", name: "The River Road", description: "Path winding through the faerie lands", eventCount: 0 },
+      { id: "l1", name: "The Mortal Lands", description: "Feyre's impoverished homeland beyond the Wall", type: "Landmark", firstAppears: 1, eventCount: 1, photo: null },
+      { id: "l2", name: "The Wall", description: "Ancient barrier between mortal and faerie realms", type: "Landmark", firstAppears: 4, eventCount: 2, photo: null },
+      { id: "l3", name: "The Forest of Wolves", description: "Dense woodland where Feyre hunts to survive", type: "Landmark", firstAppears: 1, eventCount: 1, photo: null },
+      { id: "l4", name: "The Spring Court Manor", description: "Tamlin's enchanted estate, beautiful and perilous", type: "House", firstAppears: 6, eventCount: 2, photo: null },
+      { id: "l5", name: "Under the Mountain", description: "Amarantha's dark domain beneath the earth", type: "Landmark", firstAppears: 28, eventCount: 2, photo: null },
+      { id: "l6", name: "The Night Court", description: "Glimpsed realm of starlight and shadow", type: "Landmark", firstAppears: 15, eventCount: 0, photo: null },
+      { id: "l7", name: "The River Road", description: "Path winding through the faerie lands", type: "Road", firstAppears: 4, eventCount: 0, photo: null },
     ],
     timeline: [
       { id: "t1", title: "Feyre Kills the Wolf", chapter: 1, character: "Feyre", characterInitial: "F", pinType: "plot", location: "Forest of Wolves" },

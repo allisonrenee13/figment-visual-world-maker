@@ -2,49 +2,95 @@ import { useState } from "react";
 import { useProject } from "@/context/ProjectContext";
 import { Location } from "@/data/projects";
 import { MapPin, X, Plus, Image } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+const locationTypes = ["Hotel", "House", "Landmark", "Club", "Green Space", "Waterfront", "Road", "Other"];
 
 const LocationsPage = () => {
-  const { currentProject } = useProject();
+  const { currentProject, addLocation, removeLocation } = useProject();
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [form, setForm] = useState({ name: "", type: "Landmark", description: "", firstAppears: 1 });
+
+  const handleAdd = () => {
+    if (!form.name.trim()) return;
+    addLocation({
+      name: form.name,
+      type: form.type,
+      description: form.description,
+      firstAppears: form.firstAppears,
+      eventCount: 0,
+      photo: null,
+    });
+    setForm({ name: "", type: "Landmark", description: "", firstAppears: 1 });
+    setShowAddModal(false);
+  };
+
+  const locs = currentProject.locations;
 
   return (
     <div className="p-6 md:p-10">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-xl font-serif font-semibold">{currentProject.title} — Locations</h1>
-        <button className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground">
-          <Plus className="h-3 w-3" />
-          Add Location
-        </button>
+        <Button onClick={() => setShowAddModal(true)} className="bg-primary text-primary-foreground text-xs">
+          <Plus className="h-3 w-3 mr-1" /> Add Location
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {currentProject.locations.map((loc) => (
-          <button
-            key={loc.id}
-            onClick={() => setSelectedLocation(loc)}
-            className="text-left border border-border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow"
-          >
-            {/* Image placeholder */}
-            <div className="h-36 bg-muted flex items-center justify-center">
-              <Image className="h-8 w-8 text-muted-foreground/30" />
-            </div>
-            <div className="p-4">
-              <h3 className="text-sm font-serif font-semibold mb-1">{loc.name}</h3>
-              <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{loc.description}</p>
-              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                <MapPin className="h-2.5 w-2.5" />
-                {loc.eventCount} events
-              </span>
-            </div>
-          </button>
-        ))}
-      </div>
+      {locs.length === 0 ? (
+        <div className="text-center py-20">
+          <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+            <MapPin className="h-8 w-8 text-muted-foreground/40" />
+          </div>
+          <h2 className="text-lg font-serif font-semibold mb-2">No locations yet</h2>
+          <p className="text-sm text-muted-foreground mb-6">Add your first location to start building your world</p>
+          <Button onClick={() => setShowAddModal(true)} className="bg-primary text-primary-foreground">
+            <Plus className="h-3 w-3 mr-1" /> Add Location
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {locs.map((loc) => (
+            <button
+              key={loc.id}
+              onClick={() => setSelectedLocation(loc)}
+              className="text-left border border-border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow"
+            >
+              <div className="h-36 bg-muted flex items-center justify-center">
+                {loc.photo ? (
+                  <img src={loc.photo} alt={loc.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Image className="h-8 w-8 text-muted-foreground/30" />
+                )}
+              </div>
+              <div className="p-4">
+                <h3 className="text-sm font-serif font-semibold mb-1">{loc.name}</h3>
+                <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{loc.description}</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">{loc.type}</Badge>
+                  <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <MapPin className="h-2.5 w-2.5" />
+                    {loc.eventCount} events
+                  </span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Detail Panel */}
       {selectedLocation && (
         <div className="fixed inset-y-0 right-0 w-96 max-w-full bg-card border-l border-border shadow-xl z-50 p-6 overflow-y-auto">
           <div className="flex items-start justify-between mb-6">
-            <h2 className="text-xl font-serif font-semibold">{selectedLocation.name}</h2>
+            <div>
+              <h2 className="text-xl font-serif font-semibold">{selectedLocation.name}</h2>
+              <Badge variant="outline" className="text-xs mt-1">{selectedLocation.type}</Badge>
+            </div>
             <button onClick={() => setSelectedLocation(null)} className="text-muted-foreground hover:text-foreground">
               <X className="h-4 w-4" />
             </button>
@@ -52,34 +98,60 @@ const LocationsPage = () => {
 
           <p className="text-sm text-muted-foreground mb-6">{selectedLocation.description}</p>
 
-          {/* Mood board grid */}
+          <div className="text-sm mb-4">
+            <span className="text-muted-foreground">First appears:</span> <span className="font-medium">Ch. {selectedLocation.firstAppears}</span>
+          </div>
+
           <h3 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">Mood Board</h3>
           <div className="grid grid-cols-2 gap-2 mb-6">
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="aspect-square bg-muted rounded-md flex items-center justify-center">
+              <div key={i} className="aspect-square bg-muted rounded-md flex items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors">
                 <Image className="h-5 w-5 text-muted-foreground/20" />
               </div>
             ))}
           </div>
 
-          {/* Story pins */}
           <h3 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">Story Pins Here</h3>
-          <div className="space-y-2">
+          <div className="space-y-2 mb-6">
             {currentProject.pins
               .filter((p) => p.location === selectedLocation.name || selectedLocation.name.includes(p.location))
               .map((pin) => (
                 <div key={pin.id} className="flex items-center gap-2 text-sm p-2 rounded bg-muted/50">
-                  <span
-                    className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                      pin.type === "plot" ? "bg-pin-plot" : pin.type === "character" ? "bg-pin-character" : "bg-pin-location"
-                    }`}
-                  />
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${pin.type === "plot" ? "bg-destructive" : pin.type === "character" ? "bg-primary" : "bg-secondary"}`} />
                   <span>{pin.title}</span>
                 </div>
               ))}
+            {currentProject.pins.filter((p) => p.location === selectedLocation.name).length === 0 && (
+              <p className="text-xs text-muted-foreground italic">No story pins linked to this location yet.</p>
+            )}
           </div>
+
+          <button
+            onClick={() => { removeLocation(selectedLocation.id); setSelectedLocation(null); }}
+            className="text-xs text-destructive hover:underline"
+          >
+            Delete Location
+          </button>
         </div>
       )}
+
+      {/* Add Location Modal */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-xl">Add Location</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Location name" className="font-serif" />
+            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
+              {locationTypes.map((t) => <option key={t}>{t}</option>)}
+            </select>
+            <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe this location..." rows={3} />
+            <Input type="number" value={form.firstAppears} onChange={(e) => setForm({ ...form, firstAppears: Number(e.target.value) })} placeholder="First appears in chapter..." />
+            <Button onClick={handleAdd} disabled={!form.name.trim()} className="w-full bg-primary text-primary-foreground">Add Location</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Home, Map, Clock, MapPin, Settings, RefreshCw } from "lucide-react";
+import { Home, Map, Clock, MapPin, Users, Settings, RefreshCw } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import figmentLogo from "@/assets/figment-logo.png";
@@ -17,6 +17,7 @@ import {
 const navItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Map", url: "/map", icon: Map },
+  { title: "Characters", url: "/characters", icon: Users },
   { title: "Timeline", url: "/timeline", icon: Clock },
   { title: "Locations", url: "/locations", icon: MapPin },
 ];

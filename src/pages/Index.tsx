@@ -1,13 +1,28 @@
+import { useState } from "react";
 import { useProject } from "@/context/ProjectContext";
-import { MapPin, Users, Map } from "lucide-react";
+import { MapPin, Users, Map, Plus, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Index = () => {
-  const { currentProject, allProjects, setCurrentProjectId } = useProject();
+  const { currentProject, allProjects, setCurrentProjectId, createProject, updateProjectTitle } = useProject();
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [form, setForm] = useState({ title: "", genre: "Literary Fiction", setting: "", wordCount: "" });
+
+  const handleCreateProject = () => {
+    if (!form.title.trim()) return;
+    createProject(form);
+    setForm({ title: "", genre: "Literary Fiction", setting: "", wordCount: "" });
+    setShowNewProject(false);
+  };
 
   return (
     <div className="p-6 md:p-10 max-w-5xl">
       {/* Project Switcher */}
-      <div className="flex flex-wrap gap-2 mb-8">
+      <div className="flex flex-wrap items-center gap-2 mb-8">
         {allProjects.map((p) => (
           <button
             key={p.id}
@@ -21,10 +36,33 @@ const Index = () => {
             {p.title}
           </button>
         ))}
+        <button
+          onClick={() => setShowNewProject(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium border-2 border-dashed border-border text-muted-foreground hover:text-foreground hover:border-secondary transition-all"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          New Project
+        </button>
       </div>
 
       {/* Project Header */}
-      <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">{currentProject.title}</h1>
+      {editingTitle ? (
+        <input
+          autoFocus
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          onBlur={() => { updateProjectTitle(newTitle); setEditingTitle(false); }}
+          onKeyDown={(e) => { if (e.key === "Enter") { updateProjectTitle(newTitle); setEditingTitle(false); } }}
+          className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2 bg-transparent border-b-2 border-secondary outline-none w-full"
+        />
+      ) : (
+        <h1
+          onClick={() => { setNewTitle(currentProject.title); setEditingTitle(true); }}
+          className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2 cursor-pointer hover:text-secondary transition-colors"
+        >
+          {currentProject.title}
+        </h1>
+      )}
 
       {/* Project Card */}
       <div className="border border-border rounded-lg p-5 mb-8 bg-card">
@@ -42,21 +80,83 @@ const Index = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard icon={<MapPin className="h-5 w-5 text-pin-location" />} label="Pins on Map" value={currentProject.pins.length} />
-        <StatCard icon={<Users className="h-5 w-5 text-pin-character" />} label="Characters" value={currentProject.characters.length} />
+        <StatCard icon={<MapPin className="h-5 w-5 text-secondary" />} label="Pins on Map" value={currentProject.pins.length} />
+        <StatCard icon={<Users className="h-5 w-5 text-primary" />} label="Characters" value={currentProject.characters.length} />
         <StatCard icon={<Map className="h-5 w-5 text-muted-foreground" />} label="Locations" value={currentProject.locations.length} />
       </div>
 
       {/* Recent Activity */}
       <h2 className="text-lg font-serif font-semibold mb-4">Recent Activity</h2>
-      <div className="space-y-2">
-        {currentProject.recentActivity.map((item, i) => (
-          <div key={i} className="flex items-center gap-3 p-3 rounded-md bg-muted/50 text-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0" />
-            <span className="text-foreground">{item}</span>
+      {currentProject.recentActivity.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p className="text-sm">No activity yet. Start adding content to your project!</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {currentProject.recentActivity.map((item, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 rounded-md bg-muted/50 text-sm">
+              <div className="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0" />
+              <span className="text-foreground">{item}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* New Project Modal */}
+      <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-xl">New Project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">Book Title *</label>
+              <Input
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="e.g. The Paper Palace"
+                className="font-serif"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">Genre</label>
+              <select
+                value={form.genre}
+                onChange={(e) => setForm({ ...form, genre: e.target.value })}
+                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {["Literary Fiction", "Thriller", "Fantasy", "Sci-Fi", "Romance", "Historical Fiction", "Horror", "Other"].map((g) => (
+                  <option key={g}>{g}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">Setting</label>
+              <Input
+                value={form.setting}
+                onChange={(e) => setForm({ ...form, setting: e.target.value })}
+                placeholder="e.g. A small island off the coast of Florida"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">Word Count</label>
+              <Input
+                type="number"
+                value={form.wordCount}
+                onChange={(e) => setForm({ ...form, wordCount: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            <Button
+              onClick={handleCreateProject}
+              disabled={!form.title.trim()}
+              className="w-full bg-primary text-primary-foreground font-medium"
+            >
+              Create Project
+            </Button>
           </div>
-        ))}
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
