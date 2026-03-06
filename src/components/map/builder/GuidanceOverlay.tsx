@@ -30,7 +30,7 @@ const GuidanceOverlay = ({ onDismiss }: GuidanceOverlayProps) => {
     {
       num: 1,
       title: "Draw your outline",
-      desc: "Use the Draw tool to sketch your coastline, island edge, or any boundary. Don't worry about being perfect — you can adjust it after.",
+      desc: "Use the Draw tool to sketch your world's outline — whether it's an island, a city, an estate, or an entire kingdom. Don't worry about being perfect — you can adjust it after.",
     },
     {
       num: 2,
