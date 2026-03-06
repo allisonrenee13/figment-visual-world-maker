@@ -401,7 +401,7 @@ export default function LandingPage() {
           {/* Tab content */}
           <div className={`grid grid-cols-1 md:grid-cols-2 gap-12 items-center ${activeTab === "place" ? "md:direction-rtl" : ""}`}>
             <div className={activeTab === "place" ? "md:order-2" : ""}>
-              <h3 className="font-serif text-2xl md:text-3xl font-normal text-foreground mb-4">{current.heading}</h3>
+              <h3 className="font-serif text-2xl md:text-3xl font-semibold text-foreground mb-4">{current.heading}</h3>
               <p className="text-muted-foreground leading-relaxed mb-6">{current.body}</p>
               <div className="flex flex-wrap gap-2">
                 {current.tags.map((tag) => (
