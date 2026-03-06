@@ -18,7 +18,7 @@ const ProjectSwitcher = () => {
   const [pendingProjectId, setPendingProjectId] = useState<string | null>(null);
 
   const isOnMapPage = location.pathname === "/map";
-  const isEditing = isOnMapPage && !currentProject.mapConfirmed;
+  const isEditing = isOnMapPage && currentProject && !currentProject.mapConfirmed;
 
   const handleSwitch = (id: string) => {
     if (id === currentProject.id) return;
