@@ -28,9 +28,9 @@ interface CanvasToolbarProps {
 
 const shapeTools: Array<{ id: ShapeTool; icon: typeof Hand; label: string; desc: string }> = [
   { id: "pan", icon: Hand, label: "Move", desc: "Move around your map" },
-  { id: "pen", icon: PenTool, label: "Draw", desc: "Draw your coastline or any shape" },
-  { id: "sculpt-in", icon: ArrowDownFromLine, label: "Push In", desc: "Push the coastline inward to create a bay" },
-  { id: "sculpt-out", icon: ArrowUpFromLine, label: "Pull Out", desc: "Pull the coastline outward to create a headland" },
+  { id: "pen", icon: PenTool, label: "Draw", desc: "Draw your world's outline or any shape" },
+  { id: "sculpt-in", icon: ArrowDownFromLine, label: "Push In", desc: "Push the edge inward to reshape your boundary" },
+  { id: "sculpt-out", icon: ArrowUpFromLine, label: "Pull Out", desc: "Pull the edge outward to extend your boundary" },
   { id: "smooth", icon: CircleDot, label: "Smooth", desc: "Smooth out any jagged edges" },
   { id: "eraser", icon: Eraser, label: "Erase", desc: "Remove any line or shape" },
   { id: "node-editor", icon: MousePointer2, label: "Adjust", desc: "Drag points to fine-tune your shapes" },
