@@ -341,6 +341,25 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ══ Live Stat ══ */}
+      <section className="py-12 px-6 bg-[hsl(40,20%,97%)]">
+        <div className="max-w-md mx-auto text-center">
+          <p className="text-xs font-medium text-secondary uppercase tracking-widest mb-4">Worlds created in Wrender</p>
+          <div className="flex items-center justify-center gap-12">
+            <div>
+              <p className="font-serif text-4xl font-normal text-foreground">312</p>
+              <p className="text-xs text-muted-foreground mt-1">Today</p>
+            </div>
+            <div className="w-px h-12 bg-border" />
+            <div>
+              <p className="font-serif text-4xl font-normal text-foreground">24,847</p>
+              <p className="text-xs text-muted-foreground mt-1">All time</p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground/60 mt-4">Every map is a story's world made visible.</p>
+        </div>
+      </section>
+
       {/* ══ Section 5: The Problem ══ */}
       <section className="py-20 px-6 md:px-12 bg-[hsl(40,20%,97%)]">
         <div className="max-w-4xl mx-auto text-center mb-12">
