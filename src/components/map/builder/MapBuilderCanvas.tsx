@@ -149,38 +149,55 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       return () => window.removeEventListener("keydown", handler);
     }, [doUndo, doRedo]);
 
-    // --- Apply Style Changes ---
+    // --- Apply Style Changes (including line style variations) ---
     useEffect(() => {
       const canvas = fabricRef.current;
       if (!canvas) return;
 
       canvas.backgroundColor = colors.bg;
 
+      // Line style effects
+      const lineStyle = stylePrefs.lineStyle;
+      const getLineStyleProps = () => {
+        switch (lineStyle) {
+          case "hand-drawn":
+            return { strokeDashArray: undefined, opacity: 0.95, stroke: colors.stroke };
+          case "nautical":
+            return { strokeDashArray: undefined, opacity: 1, stroke: colors.stroke };
+          case "aged":
+            return { strokeDashArray: [1, 0.5], opacity: 0.85, stroke: stylePrefs.background === "dark" ? "#d4c9a8" : "#2a1f0f" };
+          default: // clean
+            return { strokeDashArray: undefined, opacity: 1, stroke: colors.stroke };
+        }
+      };
+      const lineProps = getLineStyleProps();
+
       canvas.getObjects().forEach((obj) => {
         if (obj.excludeFromExport) {
-          // dot grid
           obj.set({ fill: colors.stroke });
         } else if (obj instanceof Path) {
+          const isCoastline = !(obj as any)._isFeature;
           obj.set({
-            stroke: colors.stroke,
-            strokeWidth: sw,
+            stroke: (obj as any)._isRiver ? "#6B8CAE" : lineProps.stroke,
+            strokeWidth: lineStyle === "nautical" && isCoastline ? sw * 1.6 : sw,
+            strokeDashArray: lineProps.strokeDashArray as number[] | undefined,
+            opacity: lineProps.opacity,
           });
         } else if (obj instanceof Line) {
-          obj.set({ stroke: colors.stroke });
+          obj.set({ stroke: lineProps.stroke });
         } else if (obj instanceof Rect || obj instanceof Circle) {
           if ((obj as any).isRefImage) return;
-          obj.set({ stroke: colors.stroke });
+          obj.set({ stroke: lineProps.stroke });
         }
       });
 
-      // Update drawing brush if active
       if (canvas.freeDrawingBrush) {
-        canvas.freeDrawingBrush.color = colors.stroke;
+        canvas.freeDrawingBrush.color = lineProps.stroke;
         canvas.freeDrawingBrush.width = sw;
       }
 
       canvas.renderAll();
-    }, [colors.bg, colors.stroke, sw]);
+    }, [colors.bg, colors.stroke, sw, stylePrefs.lineStyle, stylePrefs.background]);
 
     // --- Tool Activation ---
     useEffect(() => {
@@ -203,12 +220,45 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       });
 
       if (activeStamp) {
-        // Stamp mode
         canvas.defaultCursor = "crosshair";
-        canvas.on("mouse:down", (e) => {
-          const pointer = canvas.getScenePoint(e.e);
-          placeStamp(activeStamp, pointer.x, pointer.y);
-        });
+        if (activeStamp === "road") {
+          // Two-click road placement
+          let startPoint: { x: number; y: number } | null = null;
+          let previewLine: Line | null = null;
+          canvas.on("mouse:down", (e) => {
+            const pointer = canvas.getScenePoint(e.e);
+            if (!startPoint) {
+              startPoint = { x: pointer.x, y: pointer.y };
+              canvas.defaultCursor = "crosshair";
+            } else {
+              if (previewLine) canvas.remove(previewLine);
+              placeRoad(startPoint.x, startPoint.y, pointer.x, pointer.y);
+              startPoint = null;
+              previewLine = null;
+            }
+          });
+          canvas.on("mouse:move", (e) => {
+            if (!startPoint) return;
+            const pointer = canvas.getScenePoint(e.e);
+            if (previewLine) canvas.remove(previewLine);
+            previewLine = new Line([startPoint.x, startPoint.y, pointer.x, pointer.y], {
+              stroke: colors.stroke,
+              strokeWidth: 1,
+              strokeDashArray: [4, 4],
+              selectable: false,
+              evented: false,
+              excludeFromExport: true,
+              opacity: 0.4,
+            });
+            canvas.add(previewLine);
+            canvas.renderAll();
+          });
+        } else {
+          canvas.on("mouse:down", (e) => {
+            const pointer = canvas.getScenePoint(e.e);
+            placeStamp(activeStamp, pointer.x, pointer.y);
+          });
+        }
         return;
       }
 
@@ -401,6 +451,22 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTool, activeStamp, colors.stroke, sw]);
 
+    // --- Place Road (two-click) ---
+    const placeRoad = useCallback((x1: number, y1: number, x2: number, y2: number) => {
+      const canvas = fabricRef.current;
+      if (!canvas) return;
+      const road = new Line([x1, y1, x2, y2], {
+        stroke: colors.stroke,
+        strokeWidth: 1.5,
+        strokeDashArray: [8, 4],
+        selectable: false,
+        evented: false,
+      });
+      canvas.add(road);
+      canvas.renderAll();
+      saveState();
+    }, [colors.stroke, saveState]);
+
     // --- Place Feature Stamp ---
     const placeStamp = useCallback((type: FeatureStamp, x: number, y: number) => {
       const canvas = fabricRef.current;
@@ -459,17 +525,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           });
           break;
         }
-        case "road": {
-          const road = new Line([x - 30, y, x + 30, y], {
-            stroke,
-            strokeWidth: 1.5,
-            strokeDashArray: [8, 4],
-            selectable: false,
-            evented: false,
-          });
-          canvas.add(road);
+        case "road":
+          // handled by placeRoad for two-click, fallback single stamp
           break;
-        }
         case "river": {
           const river = new Path(
             `M ${x} ${y - 25} Q ${x + 12} ${y} ${x} ${y + 25}`,
@@ -481,6 +539,8 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               evented: false,
             }
           );
+          (river as any)._isRiver = true;
+          (river as any)._isFeature = true;
           canvas.add(river);
           break;
         }
