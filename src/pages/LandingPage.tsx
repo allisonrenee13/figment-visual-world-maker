@@ -259,24 +259,20 @@ export default function LandingPage() {
       )}
 
       {/* ══ Section 2: Hero ══ */}
-      <section className="pt-16 md:pt-24 pb-12 flex flex-col items-center text-center px-6">
-        <h1 className="font-serif text-4xl md:text-6xl font-normal text-foreground leading-tight max-w-3xl mb-4">
+      <section className="pt-20 md:pt-28 pb-6 flex flex-col items-center text-center px-6">
+        <h1 className="font-serif text-5xl md:text-7xl font-semibold text-foreground leading-[1.1] max-w-3xl mb-8">
           See your story's world.
         </h1>
-        <p className="font-serif italic text-foreground/50 text-sm md:text-base mb-6">
-          From the world in your head to something you can actually see.
-        </p>
         <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-2 leading-relaxed">
           Your visual companion while you write. Render your story's setting as a clean line drawing, see what is in your head, plan where everything happens, and write with clarity.
         </p>
-        <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-4 leading-relaxed font-medium">
+        <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-0 leading-relaxed font-medium">
           Render your world. Write your story.
         </p>
       </section>
 
-
-      {/* ══ Section 4: Large App Visual ══ */}
-      <section className="py-16 px-6 md:px-12">
+      {/* ══ Large App Visual ══ */}
+      <section className="pt-8 pb-16 px-6 md:px-12">
         <div className="max-w-5xl mx-auto">
           <div className="border border-border rounded-xl shadow-lg overflow-hidden bg-card">
             <div className="flex items-center gap-1.5 px-4 py-2.5 bg-muted/50 border-b border-border">
