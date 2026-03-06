@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { projects as initialProjects, Project, Pin, Character, Location, TimelineEvent, PinType, EventTier, MapVersion } from "@/data/projects";
+import { projects as initialProjects, Project, Pin, Character, Location, TimelineEvent, PinType, EventTier, MapVersion, MapState } from "@/data/projects";
 import { toast } from "@/hooks/use-toast";
 
 interface ProjectContextType {
@@ -25,6 +25,7 @@ interface ProjectContextType {
   addMapVersion: (label: string, description: string) => void;
   restoreMapVersion: (versionId: string) => void;
   getUnillustratedCount: () => number;
+  updateMapState: (state: Partial<MapState>) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -243,6 +244,13 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     return currentProject.locations.filter((l) => l.status === "pinned").length;
   }, [currentProject]);
 
+  const updateMapState = useCallback((state: Partial<MapState>) => {
+    updateCurrentProject((p) => ({
+      ...p,
+      mapState: { ...(p.mapState || { canvasJSON: null, renderedSVG: null, currentStep: 1, stylePrefs: null }), ...state },
+    }));
+  }, [updateCurrentProject]);
+
   return (
     <ProjectContext.Provider
       value={{
@@ -268,6 +276,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         addMapVersion,
         restoreMapVersion,
         getUnillustratedCount,
+        updateMapState,
       }}
     >
       {children}
