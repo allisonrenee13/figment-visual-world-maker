@@ -62,6 +62,18 @@ export interface TimelineEvent {
   location: string;
 }
 
+export interface MapState {
+  canvasJSON: string | null;
+  renderedSVG: string | null;
+  currentStep: 1 | 2 | 3;
+  stylePrefs: {
+    lineStyle: string;
+    strokeWeight: string;
+    background: string;
+    labelStyle: string;
+  } | null;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -77,6 +89,7 @@ export interface Project {
   timeline: TimelineEvent[];
   recentActivity: string[];
   mapVersions: MapVersion[];
+  mapState?: MapState;
 }
 
 export const projects: Project[] = [
