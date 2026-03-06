@@ -203,8 +203,8 @@ export default function LandingPage() {
   };
 
   const tabContent = {
-    render: {
-      heading: "Render your setting.",
+    create: {
+      heading: "Create your map.",
       body: "Describe your world, upload reference images, and mark up what you want to keep or change. Wrender generates a precise line sketch of your setting. Like an architectural drawing of the world your story lives in.",
       tags: ["Line sketch generation", "Reference image upload", "Markup tool", "Version history"],
       illustration: <RenderIllustration />,
