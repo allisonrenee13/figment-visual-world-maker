@@ -1,47 +1,80 @@
 import { useState, useEffect } from "react";
 import { SeeneryLogo } from "@/components/SeeneryLogo";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, MapPin, BookOpen, Users, Check } from "lucide-react";
+import { ChevronDown, Check, Menu, X } from "lucide-react";
 
-/* ───── tiny inline SVG icons for feature cards ───── */
-const IconMapWorld = () => (
+/* ───── SVG Icons (architectural / drafting style) ───── */
+const IconSketchSetting = () => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="mx-auto mb-4">
-    <ellipse cx="24" cy="28" rx="18" ry="10" stroke="hsl(var(--foreground))" strokeWidth="1.5" fill="none" />
-    <path d="M14 26 Q16 22 20 21 Q24 19 28 21 Q32 23 34 26" stroke="hsl(var(--foreground))" strokeWidth="1" fill="none" />
-    <circle cx="24" cy="24" r="1.5" fill="hsl(var(--secondary))" />
-    <path d="M24 14 L24 22" stroke="hsl(var(--foreground))" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
-    <path d="M22 14 L24 10 L26 14" stroke="hsl(var(--foreground))" strokeWidth="1" fill="none" />
+    <path d="M12 28 Q14 20 20 18 Q24 16 30 18 Q36 21 38 28 Q34 30 30 31 Q24 33 20 31 Q14 30 12 28Z" stroke="currentColor" strokeWidth="1.2" fill="none" />
+    <line x1="8" y1="34" x2="40" y2="34" stroke="currentColor" strokeWidth="0.6" opacity="0.15" />
+    <line x1="10" y1="37" x2="38" y2="37" stroke="currentColor" strokeWidth="0.6" opacity="0.1" />
+    <circle cx="24" cy="23" r="1.5" className="fill-secondary" />
   </svg>
 );
 
 const IconPlaceStory = () => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="mx-auto mb-4">
-    <path d="M24 8 C24 8 18 14 18 20 C18 24 21 26 24 26 C27 26 30 24 30 20 C30 14 24 8 24 8Z" stroke="hsl(var(--foreground))" strokeWidth="1.5" fill="none" />
-    <circle cx="24" cy="19" r="2" fill="hsl(var(--secondary))" />
-    <rect x="19" y="30" width="10" height="12" rx="1" stroke="hsl(var(--foreground))" strokeWidth="1.2" fill="none" />
-    <line x1="21" y1="34" x2="27" y2="34" stroke="hsl(var(--foreground))" strokeWidth="0.7" opacity="0.4" />
-    <line x1="21" y1="36.5" x2="27" y2="36.5" stroke="hsl(var(--foreground))" strokeWidth="0.7" opacity="0.4" />
-    <line x1="21" y1="39" x2="25" y2="39" stroke="hsl(var(--foreground))" strokeWidth="0.7" opacity="0.4" />
+    <path d="M24 10 C24 10 18 18 18 23 C18 27 21 29 24 29 C27 29 30 27 30 23 C30 18 24 10 24 10Z" stroke="currentColor" strokeWidth="1.2" fill="none" />
+    <circle cx="24" cy="22" r="2" className="fill-secondary" />
+    <line x1="16" y1="34" x2="32" y2="34" stroke="currentColor" strokeWidth="0.6" opacity="0.2" />
+    <line x1="18" y1="37" x2="30" y2="37" stroke="currentColor" strokeWidth="0.6" opacity="0.15" />
   </svg>
 );
 
-const IconCharacters = () => (
+const IconTrackChars = () => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="mx-auto mb-4">
-    <circle cx="24" cy="16" r="6" stroke="hsl(var(--foreground))" strokeWidth="1.5" fill="none" />
-    <path d="M14 38 C14 30 19 26 24 26 C29 26 34 30 34 38" stroke="hsl(var(--foreground))" strokeWidth="1.5" fill="none" />
-    <circle cx="30" cy="30" r="1.2" fill="hsl(var(--primary))" />
-    <path d="M30 28 L30 25" stroke="hsl(var(--foreground))" strokeWidth="0.8" strokeDasharray="1.5 1.5" opacity="0.5" />
+    <circle cx="24" cy="16" r="5" stroke="currentColor" strokeWidth="1.2" fill="none" />
+    <path d="M15 36 C15 28 19 25 24 25 C29 25 33 28 33 36" stroke="currentColor" strokeWidth="1.2" fill="none" />
+    <circle cx="30" cy="20" r="1" className="fill-secondary" />
+    <path d="M30 22 L30 25" stroke="currentColor" strokeWidth="0.6" strokeDasharray="1.5 1.5" opacity="0.4" />
   </svg>
 );
 
-/* ───── demo book card ───── */
-function BookCard({ title, genre, setting, quote }: { title: string; genre: string; setting: string; quote: string }) {
+/* ───── Step icons ───── */
+const StepIcon1 = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-2">
+    <rect x="4" y="6" width="24" height="20" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
+    <line x1="8" y1="12" x2="24" y2="12" stroke="currentColor" strokeWidth="0.6" opacity="0.3" />
+    <line x1="8" y1="15" x2="20" y2="15" stroke="currentColor" strokeWidth="0.6" opacity="0.3" />
+    <line x1="8" y1="18" x2="22" y2="18" stroke="currentColor" strokeWidth="0.6" opacity="0.3" />
+  </svg>
+);
+const StepIcon2 = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-2">
+    <circle cx="16" cy="16" r="10" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" fill="none" />
+    <path d="M12 14 L20 14 L18 20 L10 20 Z" stroke="currentColor" strokeWidth="0.8" fill="none" />
+  </svg>
+);
+const StepIcon3 = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-2">
+    <path d="M8 20 Q10 14 14 12 Q18 10 22 12 Q26 15 26 20" stroke="currentColor" strokeWidth="1" fill="none" />
+    <circle cx="16" cy="15" r="1" className="fill-secondary" />
+    <line x1="6" y1="22" x2="28" y2="22" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
+  </svg>
+);
+const StepIcon4 = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-2">
+    <rect x="4" y="4" width="11" height="24" rx="1" stroke="currentColor" strokeWidth="0.8" fill="none" />
+    <rect x="17" y="4" width="11" height="24" rx="1" stroke="currentColor" strokeWidth="0.8" fill="none" />
+    <line x1="6" y1="10" x2="13" y2="10" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
+    <line x1="6" y1="13" x2="12" y2="13" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
+    <path d="M19 14 Q21 11 23 12 Q25 13 25 15" stroke="currentColor" strokeWidth="0.6" fill="none" />
+    <circle cx="22" cy="13" r="0.7" className="fill-secondary" />
+  </svg>
+);
+
+/* ───── Book Card ───── */
+function BookCard({ title, genre, setting, quote, sketch }: {
+  title: string; genre: string; setting: string; quote: string;
+  sketch: React.ReactNode;
+}) {
   return (
     <div className="border border-border rounded-lg p-5 bg-card min-w-[280px] snap-center">
-      <div className="h-36 bg-muted rounded-md mb-4 flex items-center justify-center">
-        <span className="text-muted-foreground/30 text-xs italic font-serif">Map preview</span>
+      <div className="h-36 bg-muted/30 rounded-md mb-4 flex items-center justify-center overflow-hidden">
+        {sketch}
       </div>
-      <span className="inline-block text-[10px] bg-primary/10 text-primary font-medium px-2 py-0.5 rounded mb-2">{genre}</span>
+      <span className="inline-block text-[10px] bg-secondary/10 text-secondary font-medium px-2 py-0.5 rounded mb-2">{genre}</span>
       <h4 className="font-serif font-semibold text-foreground mb-1">{title}</h4>
       <p className="text-xs text-muted-foreground mb-3">{setting}</p>
       <p className="text-xs italic font-serif text-muted-foreground/70">"{quote}"</p>
@@ -49,10 +82,8 @@ function BookCard({ title, genre, setting, quote }: { title: string; genre: stri
   );
 }
 
-/* ───── pricing card ───── */
-function PricingCard({
-  name, price, period, features, cta, popular
-}: {
+/* ───── Pricing Card ───── */
+function PricingCard({ name, price, period, features, cta, popular }: {
   name: string; price: string; period?: string; features: string[]; cta: string; popular?: boolean;
 }) {
   return (
@@ -84,11 +115,12 @@ function PricingCard({
   );
 }
 
-/* ───── step ───── */
-function Step({ num, title, desc }: { num: number; title: string; desc: string }) {
+/* ───── Step ───── */
+function Step({ num, title, desc, icon }: { num: number; title: string; desc: string; icon: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center text-center relative">
-      <div className="w-10 h-10 rounded-full border-2 border-primary flex items-center justify-center text-sm font-serif font-bold text-primary mb-3">
+      {icon}
+      <div className="w-8 h-8 rounded-full border-2 border-primary flex items-center justify-center text-xs font-serif font-bold text-primary mb-2">
         {num}
       </div>
       <h4 className="font-serif font-semibold text-foreground mb-1">{title}</h4>
@@ -97,10 +129,45 @@ function Step({ num, title, desc }: { num: number; title: string; desc: string }
   );
 }
 
-/* ═══════════════════════════════════════════ */
+/* ───── Mini map sketches for demo cards ───── */
+const CapeCodSketch = () => (
+  <svg viewBox="0 0 200 120" className="w-full h-full" fill="none">
+    <rect x="60" y="30" width="30" height="25" rx="1" stroke="currentColor" strokeWidth="0.8" fill="none" />
+    <ellipse cx="140" cy="60" rx="25" ry="15" stroke="currentColor" strokeWidth="0.8" fill="none" />
+    <path d="M30 80 Q50 70 80 75 Q110 80 130 70 Q150 65 170 75" stroke="currentColor" strokeWidth="0.6" fill="none" />
+    <circle cx="75" cy="42" r="1.5" className="fill-secondary" />
+    <circle cx="140" cy="58" r="1.5" className="fill-secondary" />
+    <line x1="20" y1="95" x2="180" y2="95" stroke="currentColor" strokeWidth="0.3" opacity="0.15" />
+  </svg>
+);
+
+const CommunitySketch = () => (
+  <svg viewBox="0 0 200 120" className="w-full h-full" fill="none">
+    <circle cx="100" cy="60" r="40" stroke="currentColor" strokeWidth="0.8" fill="none" />
+    <circle cx="100" cy="60" r="25" stroke="currentColor" strokeWidth="0.5" strokeDasharray="3 3" fill="none" />
+    <line x1="60" y1="60" x2="140" y2="60" stroke="currentColor" strokeWidth="0.4" opacity="0.3" />
+    <line x1="100" y1="20" x2="100" y2="100" stroke="currentColor" strokeWidth="0.4" opacity="0.3" />
+    <rect x="90" y="50" width="20" height="20" rx="1" stroke="currentColor" strokeWidth="0.5" fill="none" />
+    <circle cx="100" cy="60" r="1.5" className="fill-secondary" />
+  </svg>
+);
+
+const PrythianSketch = () => (
+  <svg viewBox="0 0 200 120" className="w-full h-full" fill="none">
+    <line x1="100" y1="10" x2="100" y2="110" stroke="currentColor" strokeWidth="1" />
+    <path d="M20 30 Q40 25 60 35 Q80 45 90 40 L90 100 Q70 95 50 85 Q30 80 20 90 Z" stroke="currentColor" strokeWidth="0.6" fill="none" />
+    <path d="M110 30 Q130 20 150 35 Q170 45 180 40 L180 100 Q160 90 140 85 Q120 80 110 90 Z" stroke="currentColor" strokeWidth="0.6" fill="none" />
+    <circle cx="60" cy="55" r="1.5" className="fill-secondary" />
+    <circle cx="150" cy="50" r="1.5" className="fill-secondary" />
+    <path d="M130 60 Q140 55 150 65 Q160 70 170 65" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 2" fill="none" opacity="0.4" />
+  </svg>
+);
+
+/* ═══════════════════════════════════════════════════════ */
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const el = document.getElementById("landing-scroll");
@@ -112,30 +179,49 @@ export default function LandingPage() {
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMobileMenuOpen(false);
   };
 
   return (
-    <div id="landing-scroll" className="h-screen overflow-y-auto bg-background">
-      {/* ── Sticky nav ── */}
+    <div id="landing-scroll" className="h-screen overflow-y-auto bg-background text-foreground">
+      {/* ── Sticky Nav ── */}
       <nav
         className={`sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 transition-all ${
           scrolled ? "bg-background/90 backdrop-blur-sm border-b border-border" : ""
         }`}
       >
         <SeeneryLogo variant="sidebar" />
-        <div className="flex items-center gap-4">
-          <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Sign In</a>
+
+        {/* Desktop links */}
+        <div className="hidden sm:flex items-center gap-4">
+          <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Sign In</a>
           <Button className="bg-primary text-primary-foreground text-sm rounded-full px-5 h-9">Start Free</Button>
         </div>
+
+        {/* Mobile hamburger */}
+        <button className="sm:hidden p-1" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </nav>
 
-      {/* ── Section 1 — Hero ── */}
+      {/* Mobile menu dropdown */}
+      {mobileMenuOpen && (
+        <div className="sm:hidden fixed inset-x-0 top-[60px] z-40 bg-background border-b border-border px-6 py-4 flex flex-col gap-3">
+          <a href="#" className="text-sm text-muted-foreground">Sign In</a>
+          <Button className="bg-primary text-primary-foreground text-sm rounded-full w-full h-9">Start Free</Button>
+        </div>
+      )}
+
+      {/* ══ Section 1 — Hero ══ */}
       <section className="min-h-[90vh] flex flex-col items-center justify-center text-center px-6 pb-16">
+        <h1 className="font-serif text-4xl md:text-6xl font-bold text-foreground leading-tight max-w-3xl mb-2">
+          You imagined it.
+        </h1>
         <h1 className="font-serif text-4xl md:text-6xl font-bold text-foreground leading-tight max-w-3xl mb-6">
-          See your story's world.
+          Now you can see it.
         </h1>
         <p className="text-muted-foreground text-base md:text-lg max-w-xl mb-8 leading-relaxed">
-          The visual world-building companion for fiction writers. Map your locations, place your characters, and see your story come alive — before you write a single word.
+          Seenery is the visual companion writers use while writing. Sketch your story's setting as a clean architectural line drawing — see what's in your head, plan where everything happens, and write with clarity.
         </p>
         <div className="flex flex-col sm:flex-row items-center gap-3 mb-4">
           <Button className="bg-primary text-secondary font-medium rounded-full px-8 h-11 text-base">
@@ -155,39 +241,104 @@ export default function LandingPage() {
             <span className="w-2.5 h-2.5 rounded-full bg-green-400/40" />
             <span className="ml-3 text-[10px] text-muted-foreground">Seenery — Isla Serrano</span>
           </div>
-          <div className="h-64 md:h-96 bg-[#FAFAF7] flex items-center justify-center relative overflow-hidden">
-            {/* Stylised island sketch */}
+          <div className="h-64 md:h-96 bg-[hsl(40,20%,97%)] flex items-center justify-center relative overflow-hidden">
             <svg viewBox="0 0 600 300" className="w-full h-full" fill="none">
               {/* Water lines */}
-              <line x1="0" y1="200" x2="600" y2="200" stroke="hsl(var(--foreground))" strokeWidth="0.3" opacity="0.08" />
-              <line x1="0" y1="220" x2="600" y2="220" stroke="hsl(var(--foreground))" strokeWidth="0.3" opacity="0.06" />
-              <line x1="0" y1="240" x2="600" y2="240" stroke="hsl(var(--foreground))" strokeWidth="0.3" opacity="0.04" />
-              {/* Island */}
+              <line x1="0" y1="200" x2="600" y2="200" stroke="currentColor" strokeWidth="0.3" opacity="0.08" />
+              <line x1="0" y1="220" x2="600" y2="220" stroke="currentColor" strokeWidth="0.3" opacity="0.06" />
+              <line x1="0" y1="240" x2="600" y2="240" stroke="currentColor" strokeWidth="0.3" opacity="0.04" />
+              {/* Island — precise line sketch */}
               <path
-                d="M150 160 Q180 100 230 90 Q280 80 320 85 Q370 75 420 100 Q460 120 470 155 Q465 175 440 185 Q400 200 350 195 Q300 205 250 195 Q200 190 170 180 Q150 175 150 160 Z"
-                stroke="hsl(var(--foreground))"
+                d="M150 160 Q165 110 210 95 Q260 78 310 82 Q360 72 410 100 Q450 120 465 155 Q458 178 430 188 Q390 202 340 196 Q290 208 240 196 Q195 192 168 180 Q148 174 150 160Z"
+                stroke="currentColor"
                 strokeWidth="1.5"
                 fill="none"
               />
+              {/* Grid lines on island */}
+              <line x1="200" y1="100" x2="200" y2="190" stroke="currentColor" strokeWidth="0.3" opacity="0.08" />
+              <line x1="260" y1="85" x2="260" y2="200" stroke="currentColor" strokeWidth="0.3" opacity="0.08" />
+              <line x1="340" y1="80" x2="340" y2="195" stroke="currentColor" strokeWidth="0.3" opacity="0.08" />
+              <line x1="400" y1="95" x2="400" y2="185" stroke="currentColor" strokeWidth="0.3" opacity="0.08" />
               {/* Pins */}
-              <circle cx="250" cy="130" r="5" fill="hsl(var(--secondary))" />
-              <text x="250" y="120" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="8" fontFamily="Playfair Display, serif" opacity="0.7">Lighthouse</text>
-              <circle cx="350" cy="110" r="5" fill="hsl(var(--secondary))" />
-              <text x="350" y="100" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="8" fontFamily="Playfair Display, serif" opacity="0.7">Hotel</text>
-              <circle cx="400" cy="145" r="4" fill="hsl(var(--primary))" />
-              <text x="400" y="138" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="7" fontFamily="DM Sans, sans-serif" opacity="0.5">Police Station</text>
-              <circle cx="200" cy="155" r="4" fill="hsl(var(--primary))" />
-              <text x="200" y="148" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="7" fontFamily="DM Sans, sans-serif" opacity="0.5">Ferry Dock</text>
+              <circle cx="250" cy="130" r="5" className="fill-secondary" />
+              <text x="250" y="120" textAnchor="middle" fill="currentColor" fontSize="8" fontFamily="Playfair Display, serif" opacity="0.7">Lighthouse</text>
+              <circle cx="350" cy="110" r="5" className="fill-secondary" />
+              <text x="350" y="100" textAnchor="middle" fill="currentColor" fontSize="8" fontFamily="Playfair Display, serif" opacity="0.7">Hotel</text>
+              <circle cx="400" cy="145" r="4" className="fill-primary" />
+              <text x="400" y="138" textAnchor="middle" fill="currentColor" fontSize="7" opacity="0.5">Police Station</text>
+              <circle cx="200" cy="155" r="4" className="fill-primary" />
+              <text x="200" y="148" textAnchor="middle" fill="currentColor" fontSize="7" opacity="0.5">Ferry Dock</text>
               {/* Compass */}
-              <text x="540" y="60" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="10" fontFamily="Playfair Display, serif" opacity="0.25">N</text>
-              <line x1="540" y1="62" x2="540" y2="80" stroke="hsl(var(--foreground))" strokeWidth="0.5" opacity="0.2" />
+              <text x="540" y="60" textAnchor="middle" fill="currentColor" fontSize="10" fontFamily="Playfair Display, serif" opacity="0.25">N</text>
+              <line x1="540" y1="62" x2="540" y2="80" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
             </svg>
           </div>
         </div>
       </section>
 
-      {/* ── Section 2 — The Problem ── */}
-      <section className="py-20 px-6 md:px-12 bg-[#FAFAF7]">
+      {/* ══ Section 2 — Writing Companion ══ */}
+      <section className="py-20 px-6 md:px-12">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          {/* Left text */}
+          <div>
+            <span className="text-xs font-medium text-secondary uppercase tracking-widest mb-3 block">Built for while you write</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
+              Sometimes seeing what's in your head helps you write what comes next.
+            </h2>
+            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+              <p>
+                You're mid-chapter. Your characters are at the yacht club and split up — but you can't quite picture where everyone goes. You know the lighthouse is north and the hotel is south, but is the timing right? Does the geography work?
+              </p>
+              <p>
+                Seenery sits alongside your writing. Open it when you need to think visually — see your setting as a clean line sketch, place your events on the map, and figure out what happens next before you write it.
+              </p>
+              <p className="font-medium text-foreground">
+                Not after you finish your book. While you're writing it.
+              </p>
+            </div>
+          </div>
+
+          {/* Right visual — split screen mockup */}
+          <div className="border border-border rounded-lg overflow-hidden shadow-sm">
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 border-b border-border">
+              <span className="w-2 h-2 rounded-full bg-destructive/40" />
+              <span className="w-2 h-2 rounded-full bg-secondary/40" />
+              <span className="w-2 h-2 rounded-full bg-green-400/40" />
+            </div>
+            <div className="flex h-56 md:h-64">
+              {/* Writing app side */}
+              <div className="flex-1 p-4 border-r border-border bg-card">
+                <div className="space-y-2">
+                  <div className="h-2 bg-muted rounded w-3/4" />
+                  <div className="h-2 bg-muted rounded w-full" />
+                  <div className="h-2 bg-muted rounded w-5/6" />
+                  <div className="h-2 bg-muted rounded w-2/3" />
+                  <div className="h-6" />
+                  <div className="h-2 bg-muted rounded w-full" />
+                  <div className="h-2 bg-muted rounded w-4/5" />
+                  <div className="h-2 bg-muted rounded w-3/4" />
+                  <div className="h-2 bg-muted rounded w-full" />
+                  <div className="h-2 bg-muted rounded w-1/2" />
+                </div>
+                <p className="text-[8px] text-muted-foreground/40 mt-3 font-serif italic">Your writing app</p>
+              </div>
+              {/* Seenery side */}
+              <div className="flex-1 bg-[hsl(40,20%,97%)] flex items-center justify-center">
+                <svg viewBox="0 0 160 120" className="w-4/5 h-4/5" fill="none">
+                  <path d="M30 60 Q40 35 60 30 Q80 25 100 30 Q120 40 130 60 Q120 70 100 75 Q80 80 60 75 Q40 70 30 60Z" stroke="currentColor" strokeWidth="0.8" fill="none" />
+                  <circle cx="70" cy="48" r="2.5" className="fill-secondary" />
+                  <circle cx="100" cy="45" r="2.5" className="fill-secondary" />
+                  <circle cx="85" cy="55" r="2" className="fill-primary" />
+                  <line x1="20" y1="90" x2="140" y2="90" stroke="currentColor" strokeWidth="0.3" opacity="0.1" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ Section 3 — The Problem ══ */}
+      <section className="py-20 px-6 md:px-12 bg-[hsl(40,20%,97%)]">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <span className="text-xs font-medium text-secondary uppercase tracking-widest mb-3 block">Sound familiar?</span>
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
@@ -200,9 +351,10 @@ export default function LandingPage() {
             <ul className="space-y-3">
               {[
                 "Scribbled maps on notebook paper you keep losing",
-                "Characters whose locations you can't keep track of",
+                "Stopping mid-scene because you can't picture the geography",
+                "Characters whose locations you're constantly second-guessing",
                 "Plot events you know happen somewhere but can't visualise",
-                "A world fully formed in your imagination that nobody else can see",
+                "Staring at a blank page when you could be planning what comes next",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-2.5 text-sm text-muted-foreground">
                   <span className="w-1.5 h-1.5 rounded-full bg-destructive/50 mt-1.5 flex-shrink-0" />
@@ -215,10 +367,11 @@ export default function LandingPage() {
             <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-4 font-medium">With Seenery</h3>
             <ul className="space-y-3">
               {[
-                "A beautiful illustrated map of your story's world",
-                "Every location pinned, named, and connected to your plot",
-                "Characters tracked across your world scene by scene",
-                "Your imagination, made visible",
+                "A precise line sketch of your story's setting — always open beside your writing",
+                "Every location planned and placed before you write the scene",
+                "Characters tracked across your world — you always know where everyone is",
+                "Plot events pinned to the map so you can see the story spatially",
+                "Clarity on what happens next — before you write a single word",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-2.5 text-sm text-foreground">
                   <span className="w-1.5 h-1.5 rounded-full bg-secondary mt-1.5 flex-shrink-0" />
@@ -230,29 +383,29 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Section 3 — Features ── */}
+      {/* ══ Section 4 — Three Core Features ══ */}
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6">
-              <IconMapWorld />
-              <h3 className="font-serif font-semibold text-lg mb-2">Map Your World</h3>
+              <IconSketchSetting />
+              <h3 className="font-serif font-semibold text-lg mb-2">Sketch Your Setting</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Upload a real place or describe your world — Seenery sketches it into a beautiful illustrated map. Add locations, drag pins, and watch your world take shape.
+                Describe your world or upload a reference place — Seenery generates a precise architectural line sketch of your setting. Like a floor plan for your story.
               </p>
             </div>
             <div className="text-center p-6">
               <IconPlaceStory />
               <h3 className="font-serif font-semibold text-lg mb-2">Place Your Story</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Drop plot events and character moments onto your map. See exactly where everything happens — and whether your story's geography makes sense.
+                Pin plot events and scenes directly onto your sketch. See exactly where everything happens — and whether your story's geography actually works.
               </p>
             </div>
             <div className="text-center p-6">
-              <IconCharacters />
-              <h3 className="font-serif font-semibold text-lg mb-2">See Your Characters</h3>
+              <IconTrackChars />
+              <h3 className="font-serif font-semibold text-lg mb-2">Track Your Characters</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Track your characters across your world. Know where everyone is at every moment — especially in your most complex scenes.
+                Track your characters across your setting. Know where everyone is at every moment — especially when your scenes get complex.
               </p>
             </div>
           </div>
@@ -262,41 +415,77 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Section 4 — Three books ── */}
-      <section className="py-20 px-6 md:px-12 bg-[#FAFAF7]">
+      {/* ══ Section 5 — Three Books Demo ══ */}
+      <section className="py-20 px-6 md:px-12 bg-[hsl(40,20%,97%)]">
         <div className="max-w-5xl mx-auto text-center mb-12">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-3">For every kind of story.</h2>
+          <span className="text-xs font-medium text-secondary uppercase tracking-widest mb-3 block">Works for every kind of story</span>
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-3">If setting matters to your story — Seenery is for you.</h2>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            Whether your world is a fantasy kingdom, a controlled dystopia, or a sun-bleached island — Seenery makes it visible.
+            Whether your world is a fantasy kingdom, a controlled dystopia, or a sun-bleached island — if place shapes your story, you need to see it.
           </p>
         </div>
         <div className="max-w-5xl mx-auto flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 md:grid md:grid-cols-3 md:overflow-visible">
-          <BookCard title="The Paper Palace" genre="Literary Fiction" setting="Cape Cod, Massachusetts" quote="The setting IS the story." />
-          <BookCard title="The Giver" genre="Dystopian Fiction" setting="The Community" quote="Every boundary matters." />
-          <BookCard title="A Court of Thorns and Roses" genre="Fantasy" setting="Prythian" quote="A world worth getting lost in." />
+          <BookCard
+            title="The Paper Palace"
+            genre="Literary Fiction"
+            setting="Cape Cod, Massachusetts"
+            quote="The lake, the house, the woods. Every scene lives in a specific place."
+            sketch={<CapeCodSketch />}
+          />
+          <BookCard
+            title="The Giver"
+            genre="Dystopian Fiction"
+            setting="The Community"
+            quote="The boundary between here and Elsewhere is everything."
+            sketch={<CommunitySketch />}
+          />
+          <BookCard
+            title="A Court of Thorns and Roses"
+            genre="Fantasy"
+            setting="Prythian"
+            quote="You need to know where the Wall is before you can cross it."
+            sketch={<PrythianSketch />}
+          />
         </div>
       </section>
 
-      {/* ── Section 5 — How it works ── */}
+      {/* ══ Section 6 — How It Works ══ */}
       <section id="how-it-works" className="py-20 px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center mb-14">
+          <span className="text-xs font-medium text-secondary uppercase tracking-widest mb-3 block">How it works</span>
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
-            From imagination to illustration in minutes.
+            From imagination to line sketch in minutes.
           </h2>
         </div>
         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 relative">
-          {/* dotted connector on desktop */}
-          <div className="hidden md:block absolute top-5 left-[12.5%] right-[12.5%] border-t-2 border-dashed border-border" />
-          <Step num={1} title="Describe your world" desc="Type a description or upload reference images of real places that inspired your setting." />
-          <Step num={2} title="Mark it up" desc="Circle what to keep, exclude, or adapt using the markup tool. Guide Seenery toward your exact vision." />
-          <Step num={3} title="Generate your map" desc="Seenery sketches your world as a beautiful minimalist line art illustration — like the map at the front of a novel." />
-          <Step num={4} title="Build on it" desc="Add locations, drop plot pins, track characters. Your map grows with your story." />
+          <div className="hidden md:block absolute top-16 left-[12.5%] right-[12.5%] border-t-2 border-dashed border-border" />
+          <Step num={1} title="Describe what you imagined" desc="Type a description of your setting or upload reference images of real places that inspired your world." icon={<StepIcon1 />} />
+          <Step num={2} title="Mark it up" desc="Circle what to keep, exclude, or adapt. Guide Seenery toward your exact vision using the markup tool." icon={<StepIcon2 />} />
+          <Step num={3} title="Generate your sketch" desc="Seenery draws a precise black line sketch of your setting — like an architectural floor plan or a director's location map." icon={<StepIcon3 />} />
+          <Step num={4} title="Write alongside it" desc="Keep Seenery open while you write. Drop pins, track characters, plan scenes. Your sketch grows as your story does." icon={<StepIcon4 />} />
         </div>
       </section>
 
-      {/* ── Section 6 — Pricing ── */}
-      <section className="py-20 px-6 md:px-12 bg-[#FAFAF7]">
+      {/* ══ Section 7 — Testimonial Quote ══ */}
+      <section className="py-20 px-6 md:px-12 bg-[hsl(40,20%,97%)]">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="font-serif text-xl md:text-2xl italic text-foreground leading-relaxed mb-6">
+            "I always knew what the island looked like. I just couldn't see it — until I sketched it out. Now I open Seenery before I write every scene."
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-muted border border-border" />
+            <div className="text-left">
+              <p className="text-sm text-muted-foreground">Fiction writer</p>
+              <p className="text-xs text-muted-foreground/60">Thriller set on an island</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ Section 8 — Pricing ══ */}
+      <section className="py-20 px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center mb-12">
+          <span className="text-xs font-medium text-secondary uppercase tracking-widest mb-3 block">Pricing</span>
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-3">Simple, writer-friendly pricing.</h2>
           <p className="text-muted-foreground">Start free. Upgrade when your world demands it.</p>
         </div>
@@ -304,7 +493,7 @@ export default function LandingPage() {
           <PricingCard
             name="Free"
             price="$0"
-            features={["1 project", "Up to 10 map pins", "5 characters", "Basic map generation", "Watermarked export"]}
+            features={["1 project", "Up to 10 map pins", "5 characters", "Basic line sketch generation", "Watermarked export"]}
             cta="Start Free"
           />
           <PricingCard
@@ -312,14 +501,14 @@ export default function LandingPage() {
             price="$9/month"
             period="$7/month billed annually"
             popular
-            features={["Unlimited projects", "Unlimited pins & characters", "AI map generation", "Upload & adapt real locations", "Clean export — print ready", "Location mood boards"]}
+            features={["Unlimited projects", "Unlimited pins & characters", "AI sketch generation", "Upload & adapt real locations", "Clean export — print ready", "Location mood boards"]}
             cta="Start Free Trial"
           />
           <PricingCard
             name="Worldbuilder"
             price="$15/month"
             period="$12/month billed annually"
-            features={["Everything in Storyteller", "Character movement mapping", "Advanced timeline view", "Co-authoring", "Priority generation", "Version history"]}
+            features={["Everything in Storyteller", "Character movement mapping", "Advanced timeline view", "Co-authoring", "Priority generation", "Full version history"]}
             cta="Start Free Trial"
           />
         </div>
@@ -328,19 +517,22 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* ── Section 7 — Emotional close ── */}
+      {/* ══ Section 9 — Emotional Close ══ */}
       <section className="py-24 px-6 text-center">
-        <h2 className="font-serif text-3xl md:text-5xl font-bold text-foreground leading-tight max-w-2xl mx-auto mb-6">
-          Your world has always existed.<br />Now you can see it.
+        <h2 className="font-serif text-3xl md:text-5xl font-bold text-foreground leading-tight max-w-2xl mx-auto mb-2">
+          You imagined it.
         </h2>
-        <p className="text-muted-foreground mb-8">Join writers who are building their story's world in Seenery.</p>
+        <h2 className="font-serif text-3xl md:text-5xl font-bold text-foreground leading-tight max-w-2xl mx-auto mb-8">
+          Now you can see it.
+        </h2>
+        <p className="text-muted-foreground mb-8">Join writers who sketch their world in Seenery.</p>
         <Button className="bg-primary text-secondary font-medium rounded-full px-10 h-12 text-base mb-3">
-          Start Building Your World
+          Start Sketching Your World
         </Button>
         <p className="text-xs text-muted-foreground/60">Free to start · No credit card · 14-day trial</p>
       </section>
 
-      {/* ── Section 8 — Footer ── */}
+      {/* ══ Section 10 — Footer ══ */}
       <footer className="border-t border-border py-8 px-6 md:px-12">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <SeeneryLogo variant="sidebar" />
