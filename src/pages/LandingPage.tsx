@@ -357,7 +357,7 @@ export default function LandingPage() {
       {/* ══ Section 5: The Problem ══ */}
       <section className="py-20 px-6 md:px-12 bg-[hsl(40,20%,97%)]">
         <div className="max-w-4xl mx-auto text-center mb-12">
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">From the world in your head to something you can actually see.</h2>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">A tool for visual writers.</h2>
         </div>
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
@@ -428,7 +428,7 @@ export default function LandingPage() {
       {/* ══ Section 7: Three Books ══ */}
       <section className="py-20 px-6 md:px-12 bg-[hsl(40,20%,97%)]">
         <div className="max-w-5xl mx-auto text-center mb-12">
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground mb-3">A tool for visual writers.</h2>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground mb-3">Render your world.  Write your story.</h2>
           <p className="text-muted-foreground max-w-lg mx-auto">Whether your world is a fantasy kingdom, a controlled dystopia, or a sun-bleached island, if place shapes your story, you need to see it.</p>
         </div>
         <div className="max-w-5xl mx-auto flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 md:grid md:grid-cols-3 md:overflow-visible">
