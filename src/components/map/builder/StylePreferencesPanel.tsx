@@ -36,7 +36,7 @@ const StylePreferencesPanel = ({ prefs, onChange }: StylePreferencesPanelProps) 
   const [expanded, setExpanded] = useState(false);
 
   const update = <K extends keyof StylePreferences>(key: K, value: StylePreferences[K]) =>
-    onChange({ ...prefs, key: value, [key]: value });
+    onChange({ ...prefs, [key]: value });
 
   const isDefault =
     prefs.lineStyle === defaultStylePreferences.lineStyle &&
