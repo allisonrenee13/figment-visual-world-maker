@@ -269,8 +269,9 @@ export default function LandingPage() {
         <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-2 leading-relaxed">
           Your visual companion while you write. Render your story's setting as a clean line drawing, see what is in your head, plan where everything happens, and write with clarity.
         </p>
-        <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-8 leading-relaxed font-medium">
+        <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-4 leading-relaxed font-medium">
           Render your world. Write your story.
+        </p>
       </section>
 
 
