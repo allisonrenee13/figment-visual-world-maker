@@ -171,18 +171,6 @@ const UnifiedMapBuilder = () => {
             />
           </div>
 
-          {/* Section 2: Creation Notes */}
-          <div className="space-y-2">
-            <label className="text-sm font-serif font-semibold text-foreground">
-              Creation Notes
-            </label>
-            <Textarea
-              value={creationNotes}
-              onChange={(e) => setCreationNotes(e.target.value)}
-              placeholder="Private notes for yourself — what you want to keep, change, or figure out later."
-              className="min-h-[80px] text-sm border-border bg-muted/30 resize-none leading-relaxed text-muted-foreground"
-            />
-          </div>
 
           {/* Section 3: Reference Images */}
           <div className="space-y-2">
@@ -249,7 +237,23 @@ const UnifiedMapBuilder = () => {
             )}
           </div>
 
-          {/* Section 4: Generate */}
+          {/* Direction Notes */}
+          <div className="space-y-2">
+            <label className="text-sm font-serif font-semibold text-foreground">
+              Direction Notes
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Specific instructions for the generator beyond your description — optional, especially useful on iterations.
+            </p>
+            <Textarea
+              value={creationNotes}
+              onChange={(e) => setCreationNotes(e.target.value)}
+              placeholder="e.g. Make the southern tip more dramatic, move the village closer to the bay, keep the lighthouse but remove the marina..."
+              className="min-h-[80px] text-sm border-border bg-muted/30 resize-none leading-relaxed text-muted-foreground"
+            />
+          </div>
+
+          {/* Generate */}
           <div className="space-y-3">
             <Button
               onClick={handleGenerate}
