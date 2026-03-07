@@ -61,114 +61,15 @@ export function SeeneryLogo({ variant = "sidebar", className = "", animate = fal
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 28 28"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="flex-shrink-0"
+      style={{ color: "#1a1a1a" }}
     >
-      {/* Book outline: two pages meeting at a V-spine at the bottom centre */}
-      {/* Left page: curves up-left from spine, slight curl at top-right corner */}
-      {/* Right page: curves up-right from spine, slight curl at top-left corner */}
-      <path
-        ref={animate ? bookRef : undefined}
-        d={[
-          // Start at top-left corner of left page (slight upward curl)
-          "M 5.5 8",
-          // Left page top edge curving gently inward
-          "Q 5 7.5 6 7.2",
-          // Across to spine top
-          "L 15.5 6.5",
-          // Down the right side of the left page (the spine)
-          "Q 16 7 16 8",
-          // Down spine to bottom
-          "L 16 25",
-          // Back up the left side of the right page (spine)
-          "M 16 25",
-          "L 16 8",
-          "Q 16 7 16.5 6.5",
-          // Right page top edge
-          "L 26 7.2",
-          "Q 27 7.5 26.5 8",
-          // Right page outer edge
-          "L 26.5 24",
-          // Right page bottom edge curving to spine
-          "Q 26 24.5 16 25",
-          // Left page bottom edge curving from spine
-          "M 16 25",
-          "Q 6 24.5 5.5 24",
-          // Left page outer edge back to top
-          "L 5.5 8",
-        ].join(" ")}
-        stroke="#1a1a1a"
-        strokeWidth="1.1"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={animate ? (phase >= 1 ? 1 : 0) : 1}
-      />
-
-      {/* Spine centre line — subtle V */}
-      <line
-        x1="16" y1="7" x2="16" y2="25"
-        stroke="#1a1a1a"
-        strokeWidth="0.8"
-        opacity={animate ? (phase >= 1 ? 0.5 : 0) : 0.5}
-        style={animate ? { transition: "opacity 0.3s ease" } : undefined}
-      />
-
-      {/* Left page — faint ruled lines */}
-      <g
-        opacity={animate ? (phase >= 2 ? 0.15 : 0) : 0.15}
-        style={animate ? { transition: "opacity 0.2s ease" } : undefined}
-      >
-        <line x1="7.5" y1="11" x2="14" y2="10.2" stroke="#1a1a1a" strokeWidth="0.75" />
-        <line x1="7.5" y1="14" x2="14" y2="13.2" stroke="#1a1a1a" strokeWidth="0.75" />
-        <line x1="7.5" y1="17" x2="14" y2="16.2" stroke="#1a1a1a" strokeWidth="0.75" />
-      </g>
-
-      {/* Right page — island outline */}
-      {/* Barrier island shape: wider in middle, tapering at ends, slightly irregular */}
-      <path
-        ref={animate ? islandRef : undefined}
-        d="M 19.2 13.8 Q 19.5 12.5 20.5 11.8 Q 21.3 11.2 22.2 11 Q 23 10.9 23.6 11.3 Q 24.2 11.8 24.3 12.6 Q 24.3 13.4 23.8 14 Q 23.2 14.6 22.3 14.9 Q 21.2 15.2 20.2 14.8 Q 19.4 14.5 19.2 13.8 Z"
-        stroke="#1a1a1a"
-        strokeWidth="1"
-        fill="none"
-        strokeLinejoin="round"
-        opacity={animate ? (phase >= 3 ? 1 : 0) : 1}
-      />
-
-      {/* Navy location dot on the island */}
-      <circle
-        cx="21.8"
-        cy="12.8"
-        r="0.9"
-        fill="#1B2A4A"
-        opacity={animate ? (phase >= 4 ? 1 : 0) : 1}
-        style={animate ? { transition: "opacity 0.15s ease" } : undefined}
-      />
-
-      {/* Faint water lines below island */}
-      <g
-        opacity={animate ? (phase >= 3 ? 0.2 : 0) : 0.2}
-        style={animate ? { transition: "opacity 0.3s ease" } : undefined}
-      >
-        <line x1="18.5" y1="16.5" x2="25" y2="16.5" stroke="#1a1a1a" strokeWidth="0.75" />
-        <line x1="19" y1="18" x2="24.5" y2="18" stroke="#1a1a1a" strokeWidth="0.75" />
-      </g>
-
-      {/* Tiny compass rose — bottom right of right page */}
-      <g
-        opacity={animate ? (phase >= 3 ? 0.3 : 0) : 0.3}
-        style={animate ? { transition: "opacity 0.3s ease" } : undefined}
-      >
-        {/* N-S line */}
-        <line x1="24.5" y1="19.5" x2="24.5" y2="22.5" stroke="#1a1a1a" strokeWidth="0.75" />
-        {/* E-W line */}
-        <line x1="23" y1="21" x2="26" y2="21" stroke="#1a1a1a" strokeWidth="0.75" />
-        {/* N indicator — tiny triangle */}
-        <text x="24.5" y="19.2" textAnchor="middle" fill="#1a1a1a" fontSize="2" fontFamily="DM Sans, sans-serif" opacity="0.7">N</text>
-      </g>
+      <rect x="2" y="2" width="24" height="24" rx="2.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M5 18 Q9 13 14 16 Q19 19 23 14" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="14" cy="16" r="1.5" fill="currentColor" />
     </svg>
   );
 
