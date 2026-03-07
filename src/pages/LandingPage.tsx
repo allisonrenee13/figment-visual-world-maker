@@ -399,8 +399,7 @@ export default function LandingPage() {
         </div>
 
         <div className="max-w-4xl mx-auto pt-10 border-t border-border text-center">
-          <p className="font-serif text-xl text-foreground mb-1">You are not getting a basic map.</p>
-          <p className="font-serif text-xl text-muted-foreground/70">You are beginning a render.</p>
+          <p className="font-serif text-xl text-foreground">You aren't getting a basic map. You're getting a writer's render.</p>
         </div>
       </section>
 
