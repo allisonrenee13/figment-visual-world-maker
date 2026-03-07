@@ -377,18 +377,18 @@ export default function LandingPage() {
       {/* ══ How It Works ══ */}
       <section id="how-it-works" className="py-20 px-6 md:px-12">
         <div className="max-w-4xl mx-auto text-center mb-16">
-          <span className="text-xs font-medium text-secondary uppercase tracking-widest mb-4 block">How it works</span>
+          <span className="text-xs font-medium text-secondary uppercase tracking-widest mb-4 block">The Wrender Flow</span>
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground leading-snug">
-            A writer's render happens in layers.
+            Your map grows as your story does.
           </h2>
         </div>
 
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-0 mb-20 relative">
           <div className="hidden md:block absolute top-8 left-[16.5%] right-[16.5%] border-t border-dashed border-foreground/15" />
           {[
-            { num: "1", title: "Shape", desc: "Draw the outline. The skeleton of your world." },
-            { num: "2", title: "Place", desc: "Add locations, events, characters. Geography becomes story." },
-            { num: "3", title: "Render", desc: "Apply your style. Export a clean line drawing that is entirely yours." },
+            { num: "1", title: "Outline", desc: "Give your world a shape. The geography, the land, the skeleton." },
+            { num: "2", title: "Detail", desc: "Place your locations, events, and moments. Geography becomes story." },
+            { num: "3", title: "Companion", desc: "Write with the map open. Play out where characters go, what they pass, what's possible." },
           ].map((step) => (
             <div key={step.num} className="flex flex-col items-center text-center px-6">
               <span className="font-serif text-sm text-secondary/50 mb-4 relative z-10 bg-background px-3">{step.num}</span>
