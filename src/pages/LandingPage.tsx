@@ -270,9 +270,6 @@ export default function LandingPage() {
         <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-2 leading-relaxed">
           Your visual writing companion.
         </p>
-        <p className="text-muted-foreground text-base md:text-lg max-w-[560px] mb-0 leading-relaxed font-medium">
-          Render your world. Write your story.
-        </p>
       </section>
 
       {/* ══ Large App Visual ══ */}
