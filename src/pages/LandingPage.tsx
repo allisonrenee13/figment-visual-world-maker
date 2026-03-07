@@ -209,8 +209,8 @@ export default function LandingPage() {
   const tabContent = {
     create: {
       heading: "Shape your world.",
-      body: "Draw your map from scratch, trace over a reference image, or start from a template. You control every outline, every boundary, every shape. Wrender applies clean architectural line styling to exactly what you drew.",
-      tags: ["Freehand drawing", "Reference image trace", "Starter templates", "Version history"],
+      body: "Draw your map from scratch, trace over a reference image, or start from a template. You control every outline, every boundary, every shape. Wrender applies clean line styling to exactly what you drew.",
+      tags: ["Map drawing", "Freehand drawing", "Reference image trace", "Starter templates", "Version history"],
       illustration: <RenderIllustration />,
     },
     place: {
