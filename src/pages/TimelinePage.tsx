@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useProject } from "@/context/ProjectContext";
 import { PinType, EventTier } from "@/data/projects";
-import { Plus, Sparkles, Clock } from "lucide-react";
+import { Plus, Sparkles, Clock, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 const TimelinePage = () => {
   const { currentProject, addTimelineEvent, addPin } = useProject();
@@ -19,7 +20,7 @@ const TimelinePage = () => {
           <Clock className="h-8 w-8 text-muted-foreground/40" />
         </div>
         <h2 className="text-lg font-serif font-semibold mb-2">No project selected</h2>
-        <p className="text-sm text-muted-foreground">Create a project first to build your timeline.</p>
+        <p className="text-sm text-muted-foreground">Create a project first to add your events.</p>
       </div>
     );
   }
@@ -59,7 +60,7 @@ const TimelinePage = () => {
       <div className="p-6 md:p-10">
         <AISyncBanner />
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-xl font-serif font-semibold">{currentProject.title} — Timeline</h1>
+          <h1 className="text-xl font-serif font-semibold">{currentProject.title} — Events</h1>
           <Button onClick={() => setShowAddModal(true)} className="bg-primary text-primary-foreground text-xs">
             <Plus className="h-3 w-3 mr-1" /> Add Event
           </Button>
@@ -68,8 +69,8 @@ const TimelinePage = () => {
           <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
             <span className="text-2xl">📅</span>
           </div>
-          <h2 className="text-lg font-serif font-semibold mb-2">No events on your timeline yet</h2>
-          <p className="text-sm text-muted-foreground mb-6">Add plot pins on your map to populate the timeline, or add events directly here</p>
+          <h2 className="text-lg font-serif font-semibold mb-2">No events added yet</h2>
+          <p className="text-sm text-muted-foreground mb-6">Add plot pins on your map to populate events, or add them directly here</p>
           <Button onClick={() => setShowAddModal(true)} className="bg-primary text-primary-foreground">
             <Plus className="h-3 w-3 mr-1" /> Add Event
           </Button>
@@ -102,7 +103,7 @@ const TimelinePage = () => {
       <AISyncBanner />
 
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-xl font-serif font-semibold">{currentProject.title} — Timeline</h1>
+        <h1 className="text-xl font-serif font-semibold">{currentProject.title} — Events</h1>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowMinor(!showMinor)}
@@ -192,9 +193,49 @@ const TimelinePage = () => {
         characters={currentProject.characters}
         locations={currentProject.locations}
       />
+
+      <ComingSoonCards />
     </div>
   );
 };
+
+function ComingSoonCards() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 mt-8">
+      <Card className="border-dashed border-border/60 bg-muted/20">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground/60" />
+            <CardTitle className="text-sm font-serif font-semibold text-muted-foreground">Timeline View</CardTitle>
+            <span className="text-[10px] text-muted-foreground/50 bg-muted rounded-full px-2 py-0.5">coming soon</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground/70 leading-relaxed">
+            You'll soon be able to organise your events into a visual timeline. For now, add your major
+            and minor events here with notes and they'll be ready to arrange when it launches.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="border-dashed border-border/60 bg-muted/20">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <Upload className="h-4 w-4 text-muted-foreground/60" />
+            <CardTitle className="text-sm font-serif font-semibold text-muted-foreground">Import Events from Your Manuscript</CardTitle>
+            <span className="text-[10px] text-muted-foreground/50 bg-muted rounded-full px-2 py-0.5">coming soon</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground/70 leading-relaxed">
+            Upload a chapter or your full manuscript and Wrender will scan it and pull out the major
+            events automatically, ready for you to review and add to your story.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 function AISyncBanner() {
   return (

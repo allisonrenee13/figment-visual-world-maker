@@ -18,8 +18,8 @@ import {
 const navItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Map", url: "/map", icon: Map },
-  { title: "Timeline", url: "/timeline", icon: Clock },
   { title: "Locations", url: "/locations", icon: MapPin },
+  { title: "Events", url: "/timeline", icon: Clock },
   { title: "Characters", url: "/characters", icon: Users },
 ];
 
