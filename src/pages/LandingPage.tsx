@@ -222,8 +222,9 @@ export default function LandingPage() {
     track: {
       heading: "Track your characters across your world.",
       body: "Know where every character is at key moments and events in your story. See who is where, when, and whether their movements make narrative sense. Especially when your scenes get complex.",
-      tags: ["Character profiles", "Location tracking", "Scene choreography", "Coming soon: movement mapping"],
+      tags: ["Character profiles", "Scene choreography", "Coming soon: movement mapping"],
       illustration: <TrackIllustration />,
+      comingSoon: true,
     },
   };
 
@@ -420,6 +421,9 @@ export default function LandingPage() {
           </div>
           <div className={`grid grid-cols-1 md:grid-cols-2 gap-12 items-center ${activeTab === "place" ? "md:direction-rtl" : ""}`}>
             <div className={activeTab === "place" ? "md:order-2" : ""}>
+              {"comingSoon" in current && current.comingSoon && (
+                <span className="inline-block text-[10px] font-semibold uppercase tracking-wider bg-secondary/15 text-secondary px-2.5 py-0.5 rounded-full mb-3">Coming soon</span>
+              )}
               <h3 className="font-serif text-2xl md:text-3xl font-semibold text-foreground mb-4">{current.heading}</h3>
               <p className="text-muted-foreground leading-relaxed mb-6">{current.body}</p>
               <div className="flex flex-wrap gap-2">
