@@ -42,7 +42,7 @@ const CanvasToolbar = ({
   onBrushWeightChange,
 }: CanvasToolbarProps) => {
 
-  const showWeightButtons = activeTool === "pen" || activeTool === "eraser";
+  
 
   const renderToolButton = (
     tool: { id: ShapeTool; icon: typeof Hand; label: string; hint: string },
