@@ -3,6 +3,8 @@ import { useProject } from "@/context/ProjectContext";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 import { Loader2 } from "lucide-react";
 import EntryScreen from "./builder/EntryScreen";
@@ -55,7 +57,7 @@ function reachedTabs(phase: Phase): Set<TabId> {
 }
 
 const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: UnifiedMapBuilderProps) => {
-  const { currentProject, confirmMap, updateMapState } = useProject();
+  const { currentProject, confirmMap, updateMapState, addPin } = useProject();
 
   const savedMapState = currentProject?.mapState;
 
@@ -96,6 +98,12 @@ const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: Unifie
   const [isTimedOut, setIsTimedOut] = useState(false);
 
   const [showReference, setShowReference] = useState(false);
+
+  // Pin placement state
+  const [placingPin, setPlacingPin] = useState(false);
+  const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [pinName, setPinName] = useState("");
 
   const hasShape = canvasState.paths.length > 0 || selectedTemplate !== null;
   const colors = backgroundColors[stylePrefs.background];
