@@ -45,10 +45,12 @@ interface MapBuilderCanvasProps {
   height?: number;
   brushWidth?: number;
   eraserRadius?: number;
+  placingPin?: boolean;
+  onPinPlaced?: (x: number, y: number) => void;
 }
 
 const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
-  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height, brushWidth, eraserRadius }, ref) => {
+  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height, brushWidth, eraserRadius, placingPin, onPinPlaced }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasElRef = useRef<HTMLCanvasElement>(null);
     const fabricRef = useRef<Canvas | null>(null);
@@ -552,7 +554,28 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTool, activeStamp, colors.stroke, sw]);
 
-    // --- Place Road ---
+    // --- Pin placement ---
+    useEffect(() => {
+      const canvas = fabricRef.current;
+      if (!canvas) return;
+      if (placingPin) {
+        canvas.defaultCursor = "crosshair";
+        const handler = (e: any) => {
+          const pointer = canvas.getScenePoint(e.e);
+          const xPct = (pointer.x / (canvas.width || 800)) * 100;
+          const yPct = (pointer.y / (canvas.height || 600)) * 100;
+          onPinPlaced?.(xPct, yPct);
+        };
+        canvas.once("mouse:down", handler);
+        return () => {
+          canvas.off("mouse:down", handler);
+        };
+      } else {
+        canvas.defaultCursor = "default";
+      }
+    }, [placingPin, onPinPlaced]);
+
+
     const placeRoad = useCallback((x1: number, y1: number, x2: number, y2: number) => {
       const canvas = fabricRef.current;
       if (!canvas) return;

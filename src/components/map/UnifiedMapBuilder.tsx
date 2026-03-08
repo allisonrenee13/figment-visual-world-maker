@@ -3,6 +3,8 @@ import { useProject } from "@/context/ProjectContext";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 import { Loader2 } from "lucide-react";
 import EntryScreen from "./builder/EntryScreen";
@@ -55,7 +57,7 @@ function reachedTabs(phase: Phase): Set<TabId> {
 }
 
 const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: UnifiedMapBuilderProps) => {
-  const { currentProject, confirmMap, updateMapState } = useProject();
+  const { currentProject, confirmMap, updateMapState, addPin } = useProject();
 
   const savedMapState = currentProject?.mapState;
 
@@ -96,6 +98,12 @@ const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: Unifie
   const [isTimedOut, setIsTimedOut] = useState(false);
 
   const [showReference, setShowReference] = useState(false);
+
+  // Pin placement state
+  const [placingPin, setPlacingPin] = useState(false);
+  const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [pinName, setPinName] = useState("");
 
   const hasShape = canvasState.paths.length > 0 || selectedTemplate !== null;
   const colors = backgroundColors[stylePrefs.background];
@@ -473,18 +481,40 @@ const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: Unifie
 
             {/* Canvas phase center: EditingCanvas */}
             {isCanvasPhase && (
-              <EditingCanvas
-                initialTemplate={selectedTemplate}
-                referenceImage={canvasState.referenceImage}
-                canvasState={canvasState}
-                onCanvasChange={setCanvasState}
-                stylePrefs={stylePrefs}
-                onStylePrefsChange={setStylePrefs}
-                onRenderPreview={() => {}}
-                hideStylePanel
-                hideRenderButton
-                canvasRef={canvasRef}
-              />
+              <div className="flex-1 relative">
+                <EditingCanvas
+                  initialTemplate={selectedTemplate}
+                  referenceImage={canvasState.referenceImage}
+                  canvasState={canvasState}
+                  onCanvasChange={setCanvasState}
+                  stylePrefs={stylePrefs}
+                  onStylePrefsChange={setStylePrefs}
+                  onRenderPreview={() => {}}
+                  hideStylePanel
+                  hideRenderButton
+                  canvasRef={canvasRef}
+                  overrideActiveTool={phase === "add" ? "pan" : undefined}
+                  placingPin={placingPin}
+                  onPinPlaced={(x, y) => {
+                    setPendingPin({ x, y });
+                    setPlacingPin(false);
+                    setPinDialogOpen(true);
+                  }}
+                />
+                {/* Pin overlay */}
+                {phase === "add" && currentProject?.pins.map(pin => (
+                  <div key={pin.id} style={{
+                    position: "absolute",
+                    left: `${pin.x}%`,
+                    top: `${pin.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    zIndex: 10,
+                    pointerEvents: "none"
+                  }}>
+                    <div className="w-3 h-3 rounded-full bg-destructive border-2 border-white shadow-sm" />
+                  </div>
+                ))}
+              </div>
             )}
 
             {/* Render / Preview center */}
@@ -894,12 +924,10 @@ const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: Unifie
 
                       <Button
                         variant="outline"
-                        className="w-full"
-                        onClick={() => {
-                          toast({ title: "Pin placement", description: "Click on the map to place a pin." });
-                        }}
+                        className={`w-full ${placingPin ? "border-primary text-primary" : ""}`}
+                        onClick={() => setPlacingPin(true)}
                       >
-                        Place a Pin
+                        {placingPin ? "Click on the map to place pin..." : "Place a Pin"}
                       </Button>
                     </div>
 
@@ -928,6 +956,66 @@ const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: Unifie
         onClose={() => setTemplatePickerOpen(false)}
         onSelect={handleTemplateSelect}
       />
+
+      {/* Pin name dialog */}
+      <Dialog open={pinDialogOpen} onOpenChange={(open) => {
+        setPinDialogOpen(open);
+        if (!open) { setPendingPin(null); setPinName(""); }
+      }}>
+        <DialogContent className="sm:max-w-[320px]">
+          <DialogHeader>
+            <DialogTitle className="font-serif">Name this pin</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <Input
+              value={pinName}
+              onChange={(e) => setPinName(e.target.value)}
+              placeholder="e.g. The Dark Forest"
+              className="h-9"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && pinName.trim() && pendingPin) {
+                  addPin({
+                    title: pinName.trim(),
+                    x: pendingPin.x,
+                    y: pendingPin.y,
+                    type: "location",
+                    tier: "main",
+                    chapter: 1,
+                    location: "",
+                    note: "",
+                  });
+                  setPinDialogOpen(false);
+                  setPendingPin(null);
+                  setPinName("");
+                }
+              }}
+            />
+            <Button
+              onClick={() => {
+                if (!pinName.trim() || !pendingPin) return;
+                addPin({
+                  title: pinName.trim(),
+                  x: pendingPin.x,
+                  y: pendingPin.y,
+                  type: "location",
+                  tier: "main",
+                  chapter: 1,
+                  location: "",
+                  note: "",
+                });
+                setPinDialogOpen(false);
+                setPendingPin(null);
+                setPinName("");
+              }}
+              disabled={!pinName.trim()}
+              className="w-full bg-primary text-primary-foreground font-semibold"
+            >
+              Add Pin
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
