@@ -1073,8 +1073,12 @@ function traceOutlineImage(
     return [pts[0], pts[pts.length - 1]];
   }
 
+  const finalSignificant = isColoredBackground
+    ? filteredSignificant.slice(0, 8)
+    : filteredSignificant;
+
   const paths: TracedPath[] = [];
-  for (const comp of filteredSignificant) {
+  for (const comp of finalSignificant) {
     const boundary = getBoundary(comp);
     if (boundary.length < 4) continue;
     const ordered = orderPoints(boundary);
@@ -1088,7 +1092,7 @@ function traceOutlineImage(
     paths.push({ d, confidence: Math.min(1, comp.length / 2000) });
   }
 
-  console.log(`[tracer] found ${paths.length} paths from ${filteredSignificant.length} components (${significant.length - filteredSignificant.length} text-like filtered out)`);
+  console.log(`[tracer] found ${paths.length} paths from ${finalSignificant.length} components (${significant.length - filteredSignificant.length} text-like filtered out)`);
   return paths;
 }
 
