@@ -200,7 +200,11 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
       setIsCleanOutline(clean);
 
       // Detect poor trace quality
-      const poor = paths.length === 0 || paths.length > 8;
+      const avgConfidence = paths.length > 0
+        ? paths.reduce((sum, p) => sum + p.confidence, 0) / paths.length
+        : 0;
+      const poor = paths.length === 0 ||
+        (paths.length > 25 && avgConfidence < 0.3);
       setIsPoorTrace(poor);
 
       if (paths.length > 0) {
@@ -683,23 +687,52 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                       </div>
 
                       {/* 6. Continue to Edit */}
-                      <Button
-                        onClick={() => {
-                          // Carry the trace image as a reference overlay for the Edit tab
-                          if (traceImageDataUrl) {
-                            setCanvasState(prev => ({
-                              ...prev,
-                              referenceImage: traceImageDataUrl,
-                              referenceOpacity: 0,
-                            }));
-                          }
-                          setPhaseAndSave("shapeCanvas");
-                          setActiveTab("edit");
-                        }}
-                        className="w-full bg-primary text-primary-foreground font-semibold"
-                      >
-                        Continue to Edit →
-                      </Button>
+                      {isPoorTrace ? (
+                        <div className="p-4 border-t border-border space-y-2">
+                          <Button
+                            onClick={() => {
+                              if (traceImageDataUrl) handleManualTrace(traceImageDataUrl);
+                            }}
+                            className="w-full bg-primary text-primary-foreground font-semibold"
+                          >
+                            Trace manually →
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="w-full text-xs"
+                            onClick={() => {
+                              if (traceImageDataUrl) {
+                                setCanvasState(prev => ({
+                                  ...prev,
+                                  referenceImage: traceImageDataUrl,
+                                  referenceOpacity: 0,
+                                }));
+                              }
+                              setPhaseAndSave("shapeCanvas");
+                              setActiveTab("edit");
+                            }}
+                          >
+                            Continue with this trace anyway
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={() => {
+                            if (traceImageDataUrl) {
+                              setCanvasState(prev => ({
+                                ...prev,
+                                referenceImage: traceImageDataUrl,
+                                referenceOpacity: 0,
+                              }));
+                            }
+                            setPhaseAndSave("shapeCanvas");
+                            setActiveTab("edit");
+                          }}
+                          className="w-full bg-primary text-primary-foreground font-semibold"
+                        >
+                          Continue to Edit →
+                        </Button>
+                      )}
 
                       {/* 7. Give feedback — very bottom */}
                       <div className="text-center pt-1">
