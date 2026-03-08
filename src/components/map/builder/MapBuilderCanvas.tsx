@@ -260,6 +260,12 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       canvas.isDrawingMode = false;
       canvas.selection = false;
       canvas.defaultCursor = "default";
+      // Remove any eraser cursor circles left over
+      canvas.getObjects().forEach((obj) => {
+        if (obj.excludeFromExport && obj instanceof Circle && (obj as any).stroke === "rgba(255,0,0,0.4)") {
+          canvas.remove(obj);
+        }
+      });
       canvas.getObjects().forEach((obj) => {
         if (!obj.excludeFromExport && !(obj instanceof FabricImage)) {
           obj.selectable = false;
