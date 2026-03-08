@@ -201,7 +201,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
       if (!traceImageData || !traceImageDataUrl) return;
       const { w, h } = traceImageData;
       const img = new Image();
-      img.onload = () => {
+        img.onload = async () => {
         const c = document.createElement("canvas");
         c.width = w;
         c.height = h;
@@ -428,7 +428,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                         if (traceImageData && traceImageDataUrl) {
                           const { w, h } = traceImageData;
                           const img = new Image();
-                          img.onload = () => {
+                          img.onload = async () => {
                             const c = document.createElement("canvas");
                             c.width = w;
                             c.height = h;
