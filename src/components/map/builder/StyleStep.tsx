@@ -19,7 +19,7 @@ const StyleStep = ({ stylePrefs, onStylePrefsChange, canvasState, onContinue, on
       {/* Canvas preview — left */}
       <div className="flex-1 flex items-center justify-center p-6" style={{ backgroundColor: colors.bg }}>
         <svg viewBox="0 0 600 600" className="w-full max-w-[460px] h-auto">
-          {stylePrefs.lineStyle === "handDrawn" && (
+          {stylePrefs.lineStyle === "hand-drawn" && (
             <defs>
               <filter id="hand">
                 <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise"/>
@@ -41,7 +41,7 @@ const StyleStep = ({ stylePrefs, onStylePrefsChange, canvasState, onContinue, on
               let filter: string | undefined = undefined;
 
               switch (stylePrefs.lineStyle) {
-                case "handDrawn":
+                case "hand-drawn":
                   opacity = 0.92;
                   filter = "url(#hand)";
                   break;
