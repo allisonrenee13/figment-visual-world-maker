@@ -616,7 +616,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       loadSVG: async (svgString: string) => {
         const canvas = fabricRef.current;
         if (!canvas) return;
-        isLoadingRef.current = true;
+        isBusy.current = true;
         try {
           const result = await loadSVGFromString(svgString);
           canvas.getObjects().filter((o) => !o.excludeFromExport).forEach((o) => canvas.remove(o));
@@ -667,7 +667,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         } catch (err) {
           console.error("loadSVG failed:", err);
         } finally {
-          isLoadingRef.current = false;
+          isBusy.current = false;
         }
       },
       clear: () => {
@@ -686,10 +686,10 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       loadJSON: async (json: string) => {
         const canvas = fabricRef.current;
         if (!canvas) return;
-        isLoadingRef.current = true;
+        isBusy.current = true;
         await canvas.loadFromJSON(json);
         canvas.renderAll();
-        isLoadingRef.current = false;
+        isBusy.current = false;
       },
       addReferenceImage: (url: string, opacity: number) => {
         const canvas = fabricRef.current;
