@@ -897,6 +897,36 @@ function traceOutlineImage(
     .sort((a, b) => b.length - a.length)
     .slice(0, 300);
 
+  // 4b. Filter out likely text/letter components
+  const filteredSignificant = significant.filter(comp => {
+    const xs = comp.map(([x]) => x);
+    const ys = comp.map(([, y]) => y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const bboxW = maxX - minX;
+    const bboxH = maxY - minY;
+    const bboxArea = bboxW * bboxH;
+
+    // Filter 1: too small to be a map region (likely a letter)
+    const imageArea = w * h;
+    if (comp.length < imageArea * 0.002) {
+      const fillRatio = comp.length / (bboxArea || 1);
+      if (fillRatio < 0.35) return false;
+    }
+
+    // Filter 2: aspect ratio close to square + small = likely a single letter
+    const aspectRatio = bboxW > 0 && bboxH > 0
+      ? Math.max(bboxW, bboxH) / Math.min(bboxW, bboxH)
+      : 999;
+    const isSmall = bboxW < w * 0.06 && bboxH < h * 0.08;
+    if (isSmall && aspectRatio < 2.5) return false;
+
+    // Filter 3: very thin tall components = likely letters like I, l, 1
+    if (bboxW < w * 0.02 && bboxH < h * 0.06) return false;
+
+    return true;
+  });
+
   // 5. For each component, find boundary pixels only
   function getBoundary(comp: Array<[number, number]>): Array<[number, number]> {
     const compSet = new Set(comp.map(([x, y]) => y * w + x));
