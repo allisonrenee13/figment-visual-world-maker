@@ -33,6 +33,7 @@ export interface MapCanvasHandle {
   setReferenceOpacity: (opacity: number) => void;
   getNodeCount: () => number;
   getObjectCount: () => number;
+  setBrushWidth: (width: number) => void;
 }
 
 interface MapBuilderCanvasProps {
@@ -42,10 +43,12 @@ interface MapBuilderCanvasProps {
   onStateChange?: () => void;
   width?: number;
   height?: number;
+  brushWidth?: number;
+  eraserRadius?: number;
 }
 
 const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
-  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height }, ref) => {
+  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height, brushWidth, eraserRadius }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasElRef = useRef<HTMLCanvasElement>(null);
     const fabricRef = useRef<Canvas | null>(null);
@@ -306,7 +309,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           // Assign brush BEFORE enabling drawing mode
           const brush = new PencilBrush(canvas);
           brush.color = colors.stroke;
-          brush.width = sw;
+          brush.width = brushWidth ?? sw;
           brush.decimate = 4;
           canvas.freeDrawingBrush = brush;
           canvas.isDrawingMode = true;
@@ -338,7 +341,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             const pointer = canvas.getScenePoint(e.e);
             // Find nearest Path within 20px
             let nearestPath: Path | null = null;
-            let nearestDist = 20;
+            let nearestDist = eraserRadius ?? 20;
 
             canvas.getObjects().forEach((obj) => {
               if (!(obj instanceof Path) || obj.excludeFromExport) return;
@@ -645,6 +648,12 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       },
       getObjectCount: () =>
         fabricRef.current?.getObjects().filter((o) => !o.excludeFromExport).length ?? 0,
+      setBrushWidth: (width: number) => {
+        const canvas = fabricRef.current;
+        if (canvas?.freeDrawingBrush) {
+          canvas.freeDrawingBrush.width = width;
+        }
+      },
     }), [doUndo, doRedo, saveState, colors.bg, colors.stroke, sw, canvasWidth, canvasHeight]);
 
     return (
