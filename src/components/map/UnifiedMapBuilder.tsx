@@ -704,7 +704,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                               onClick={() => handleEntrySelect("draw")}>
                               Start from scratch →
                             </Button>
-                            </Button>
                           </div>
                         </>
                       )}
