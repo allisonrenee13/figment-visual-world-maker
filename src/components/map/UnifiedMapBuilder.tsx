@@ -167,7 +167,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   };
 
   const handleTemplateSelect = (template: MapTemplate) => {
-    setSelectedTemplate(template);
+    setIsPoorTrace(false);
     setTemplatePickerOpen(false);
     setCanvasState({ ...defaultCanvas, paths: [{ d: template.svgPath, confidence: 1 }] });
     setPhase("shapeCanvas");
@@ -179,6 +179,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   }, []);
 
   const handleAutoTrace = (imageDataUrl: string) => {
+    setIsPoorTrace(false);
     const img = new Image();
     img.onload = () => {
       const traceCanvas = document.createElement("canvas");
