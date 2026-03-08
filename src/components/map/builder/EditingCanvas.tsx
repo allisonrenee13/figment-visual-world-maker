@@ -4,13 +4,12 @@ import StylePreferencesPanel from "./StylePreferencesPanel";
 import MapBuilderCanvas, { type MapCanvasHandle } from "./MapBuilderCanvas";
 import GuidanceOverlay, { shouldShowGuidance } from "./GuidanceOverlay";
 import EmptyCanvasPrompt from "./EmptyCanvasPrompt";
-import { shapeToolHints, stampHints } from "./toolHints";
+import { shapeToolHints } from "./toolHints";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import type {
   ShapeTool,
   ToolMode,
-  FeatureStamp,
   StylePreferences,
   MapTemplate,
   CanvasState,
@@ -44,16 +43,35 @@ const EditingCanvas = ({
 }: EditingCanvasProps) => {
   const [mode, setMode] = useState<ToolMode>("shape");
   const [activeTool, setActiveTool] = useState<ShapeTool>("pen");
-  const [activeStamp, setActiveStamp] = useState<FeatureStamp | null>(null);
   const [nodeCount, setNodeCount] = useState(0);
   const [objectCount, setObjectCount] = useState(0);
   const [refOpacity, setRefOpacity] = useState(canvasState.referenceOpacity);
   const templateLoadedRef = useRef(false);
   const [showGuidance, setShowGuidance] = useState(() => {
-    // Show guidance only if canvas is empty and not previously dismissed
     return canvasState.paths.length === 0 && !initialTemplate && shouldShowGuidance();
   });
   const [hasDrawn, setHasDrawn] = useState(canvasState.paths.length > 0 || !!initialTemplate);
+
+  // Brush size state: separate defaults for pen and eraser
+  const [penSize, setPenSize] = useState(4);
+  const [eraserSize, setEraserSize] = useState(12);
+  const currentBrushSize = activeTool === "eraser" ? eraserSize : penSize;
+
+  const handleBrushSizeChange = (size: number) => {
+    if (activeTool === "eraser") {
+      setEraserSize(size);
+    } else {
+      setPenSize(size);
+      // Update Fabric canvas brush width in real-time
+      const handle = canvasHandle.current as any;
+      if (handle) {
+        const canvas = handle._fabricCanvas?.();
+        if (canvas?.freeDrawingBrush) {
+          canvas.freeDrawingBrush.width = size;
+        }
+      }
+    }
+  };
 
   const internalRef = useRef<MapCanvasHandle | null>(null);
   const canvasHandle = externalCanvasRef || internalRef;
