@@ -676,7 +676,7 @@ function runPotraceOnCanvas(canvas: HTMLCanvasElement, w: number, h: number, sen
 
     console.log(`[tracer] potrace ${w}x${h}, threshold=${threshold}, sensitivity=${sensitivity}`);
 
-    const result = (POTRACE as any).trace(canvas, {
+    const result = (POTRACE as any).traceCanvas(canvas, {
       turdsize: 4,
       alphamax: 1.0,
       optcurve: true,
