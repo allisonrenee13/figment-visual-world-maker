@@ -676,6 +676,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                             setCanvasState(prev => ({
                               ...prev,
                               referenceImage: traceImageDataUrl,
+                              referenceOpacity: 0,
                             }));
                           }
                           setPhaseAndSave("shapeCanvas");
