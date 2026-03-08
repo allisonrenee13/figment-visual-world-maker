@@ -774,6 +774,7 @@ function traceOutlineMode(gray: Float32Array, w: number, h: number, sensitivity:
     }
   }
 
+  console.log(`[tracer:outline] found ${contours.length} contours, minSize=${minSize}`);
   // Sort by size, keep top 250
   contours.sort((a, b) => b.length - a.length);
   const kept = contours.slice(0, 250);
