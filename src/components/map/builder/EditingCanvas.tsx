@@ -191,9 +191,6 @@ const EditingCanvas = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Expose showReference setter for parent (toggle in Edit tab right panel)
-  // The toggle is in UnifiedMapBuilder — we expose it via a getter on the ref
-  const getShowReference = useCallback(() => showReference, [showReference]);
   const toggleReference = useCallback(() => setShowReference(v => !v), []);
 
   const handleGuidanceDismiss = () => {
