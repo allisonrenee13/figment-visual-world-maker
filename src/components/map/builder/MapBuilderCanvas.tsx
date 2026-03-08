@@ -70,9 +70,20 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     const saveState = useCallback(() => {
       const canvas = fabricRef.current;
       if (!canvas || isLoadingRef.current) return;
-      const json = JSON.stringify(canvas.toJSON(
-        ["data", "selectable", "evented", "excludeFromExport"]
-      ));
+      // Include custom properties in serialization
+      const jsonObj = canvas.toJSON();
+      // Manually preserve custom data on objects
+      const objects = canvas.getObjects();
+      if (jsonObj.objects) {
+        jsonObj.objects.forEach((obj: any, i: number) => {
+          const fabricObj = objects[i];
+          if (fabricObj) {
+            if ((fabricObj as any).data) obj.data = (fabricObj as any).data;
+            if ((fabricObj as any).excludeFromExport) obj.excludeFromExport = true;
+          }
+        });
+      }
+      const json = JSON.stringify(jsonObj);
       historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
       historyRef.current.push(json);
       historyIndexRef.current = historyRef.current.length - 1;
