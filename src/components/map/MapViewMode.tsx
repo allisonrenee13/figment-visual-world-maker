@@ -168,12 +168,15 @@ const MapViewMode = ({ onEditMap }: MapViewModeProps) => {
             handleMapClick(xPct, yPct);
           }}
         >
-          <div className="w-full max-w-[700px] relative">
-            {renderedSVG ? (
-              <div dangerouslySetInnerHTML={{ __html: renderedSVG }} />
+          <div className="w-full max-w-[700px] relative" style={{ minHeight: "400px" }}>
+            {currentProject?.mapState?.renderedSVG ? (
+              <div
+                className="w-full h-full"
+                dangerouslySetInnerHTML={{ __html: currentProject.mapState.renderedSVG }}
+              />
             ) : (
               <div className="aspect-[4/3] bg-muted/30 rounded-lg flex items-center justify-center">
-                <p className="text-sm text-muted-foreground italic">Your rendered map will appear here</p>
+                <p className="text-muted-foreground text-sm italic">Your rendered map will appear here</p>
               </div>
             )}
 
