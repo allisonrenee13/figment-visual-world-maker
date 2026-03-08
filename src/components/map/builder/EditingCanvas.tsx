@@ -62,14 +62,7 @@ const EditingCanvas = ({
       setEraserSize(size);
     } else {
       setPenSize(size);
-      // Update Fabric canvas brush width in real-time
-      const handle = canvasHandle.current as any;
-      if (handle) {
-        const canvas = handle._fabricCanvas?.();
-        if (canvas?.freeDrawingBrush) {
-          canvas.freeDrawingBrush.width = size;
-        }
-      }
+      canvasHandle.current?.setBrushWidth(size);
     }
   };
 
