@@ -703,17 +703,12 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                             variant="outline"
                             className="w-full text-xs"
                             onClick={() => {
-                              if (traceImageDataUrl) {
-                                setCanvasState(prev => ({
-                                  ...prev,
-                                  referenceImage: traceImageDataUrl,
-                                  referenceOpacity: 0,
-                                }));
-                              }
                               setPhaseAndSave("shapeCanvas");
                               setActiveTab("edit");
                             }}
                           >
+                            Continue with this trace anyway
+                          </Button>
                             Continue with this trace anyway
                           </Button>
                         </div>
@@ -724,7 +719,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                               setCanvasState(prev => ({
                                 ...prev,
                                 referenceImage: traceImageDataUrl,
-                                referenceOpacity: 0,
                               }));
                             }
                             setPhaseAndSave("shapeCanvas");
