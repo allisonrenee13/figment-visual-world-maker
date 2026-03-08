@@ -204,7 +204,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
         ? paths.reduce((sum, p) => sum + p.confidence, 0) / paths.length
         : 0;
       const poor = paths.length === 0 ||
-        (isColoredBackground && paths.length > 25 && avgConfidence < 0.3);
+        (paths.length > 25 && avgConfidence < 0.3);
       setIsPoorTrace(poor);
 
       if (paths.length > 0) {
