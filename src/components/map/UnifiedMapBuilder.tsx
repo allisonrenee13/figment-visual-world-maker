@@ -540,22 +540,10 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                 {activeTab === "trace" && (
                   <div className="flex-1 flex flex-col">
                     <div className="p-5 space-y-5 flex-1 overflow-y-auto">
-                      <div>
-                        <h3 className="text-base font-serif font-semibold text-foreground mb-1">Your trace is ready</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Not quite right? Try free drawing with a template as your base, or draw from scratch.
-                          We're always working to improve the auto-tracer — tap the feedback button if something looks off.
-                        </p>
-                      </div>
+                      {/* 1. Heading */}
+                      <h3 className="text-base font-serif font-semibold text-foreground">Your trace is ready</h3>
 
-                      <a
-                        href="mailto:feedback@wrender.com?subject=Tracer%20feedback"
-                        className="inline-flex items-center text-xs text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
-                      >
-                        Give feedback
-                      </a>
-
-                      {/* Sensitivity slider */}
+                      {/* 2. Sensitivity slider + Re-trace */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <p className="text-xs font-medium text-foreground">Sensitivity</p>
@@ -573,19 +561,34 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                           Lower = fewer edges, higher = more detail (may include noise)
                         </p>
                       </div>
+
+                      {/* 3. "Not quite right?" text */}
+                      <p className="text-xs text-muted-foreground">Not quite right? You can also:</p>
+
+                      {/* 4. Two option buttons side by side */}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => handleEntrySelect("template")}
+                        >
+                          Browse Templates →
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => handleEntrySelect("draw")}
+                        >
+                          Draw from scratch →
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Trace tab footer */}
                     <div className="p-4 border-t border-border space-y-2">
-                      <Button
-                        onClick={() => {
-                          setPhaseAndSave("shapeCanvas");
-                          setActiveTab("edit");
-                        }}
-                        className="w-full bg-primary text-primary-foreground font-semibold"
-                      >
-                        Continue to Edit →
-                      </Button>
+                      {/* 5. Re-trace and Save as Template */}
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
@@ -625,12 +628,27 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                           Save as Template
                         </Button>
                       </div>
-                      <button
-                        onClick={() => setPhase("upload")}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-center"
+
+                      {/* 6. Continue to Edit */}
+                      <Button
+                        onClick={() => {
+                          setPhaseAndSave("shapeCanvas");
+                          setActiveTab("edit");
+                        }}
+                        className="w-full bg-primary text-primary-foreground font-semibold"
                       >
-                        ← Back to Upload
-                      </button>
+                        Continue to Edit →
+                      </Button>
+
+                      {/* 7. Give feedback — very bottom */}
+                      <div className="text-center pt-1">
+                        <a
+                          href="mailto:feedback@wrender.com?subject=Tracer%20feedback"
+                          className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+                        >
+                          Give feedback
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
