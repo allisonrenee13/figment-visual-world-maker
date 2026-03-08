@@ -298,15 +298,28 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
   };
 
   const handleRender = () => {
+    // Capture SVG NOW while canvas is still mounted
+    const svg = canvasRef.current?.getSVG() || "";
+    console.log("[render] captured svg length:", svg.length);
+
+    // Then animate
     setPhase("rendering");
 
     setTimeout(() => {
-      const svg = canvasRef.current?.getSVG() || "";
-      console.log("[render] svg length:", svg.length, "preview:", svg.slice(0, 100));
       if (svg && svg.length > 100) {
         onRender?.(svg);
       } else {
-        alert("Canvas was empty — please try again");
+        // Fallback: build from traced paths
+        const sw = stylePrefs.strokeWeight === "fine" ? 1
+          : stylePrefs.strokeWeight === "bold" ? 2.5 : 1.8;
+        const pathMarkup = canvasState.paths
+          .map(p => `<path d="${p.d}" fill="none" stroke="#1a1a1a" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"/>`)
+          .join("\n");
+        const fallback = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+          <rect width="600" height="600" fill="#FAFAF7"/>
+          ${pathMarkup}
+        </svg>`;
+        onRender?.(fallback);
       }
     }, 1500);
   };
