@@ -8,12 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import StepIndicator, { type BuilderStep } from "./builder/StepIndicator";
+import { Loader2 } from "lucide-react";
 import EntryScreen from "./builder/EntryScreen";
 import TemplatePicker from "./builder/TemplatePicker";
 import UploadTraceFlow from "./builder/UploadTraceFlow";
 import EditingCanvas from "./builder/EditingCanvas";
-import StyleStep from "./builder/StyleStep";
+import StylePreferencesPanel from "./builder/StylePreferencesPanel";
 import type { MapCanvasHandle } from "./builder/MapBuilderCanvas";
 import { postProcessSVG, exportSVG, exportPNG } from "./builder/svgPostProcess";
 import type { BuilderPath, MapTemplate, StylePreferences, CanvasState, TracedPath } from "./builder/types";
@@ -21,6 +21,7 @@ import { defaultStylePreferences, lineStyleLabels, backgroundColors } from "./bu
 import { saveTemplate } from "@/lib/templateLibrary";
 
 type Phase = "entry" | "upload" | "traceReview" | "shapeCanvas" | "style" | "renderReady" | "rendering" | "preview";
+type TabId = "trace" | "style" | "done";
 
 interface UnifiedMapBuilderProps {
   onConfirm?: () => void;
@@ -34,23 +35,24 @@ const defaultCanvas: CanvasState = {
   nodeCount: 0,
 };
 
-function phaseToStep(phase: Phase): BuilderStep {
+function phaseToTab(phase: Phase): TabId {
+  if (phase === "entry" || phase === "upload" || phase === "traceReview") return "trace";
+  if (phase === "shapeCanvas" || phase === "style") return "style";
+  return "done";
+}
+
+function phaseToStep(phase: Phase): number {
   if (phase === "entry" || phase === "upload" || phase === "traceReview" || phase === "shapeCanvas") return 1;
   if (phase === "style") return 2;
   return 3;
 }
 
-function completedStepsForPhase(phase: Phase): Set<number> {
-  const s = new Set<number>();
-  if (phase === "style") s.add(1);
-  if (phase === "renderReady" || phase === "rendering" || phase === "preview") { s.add(1); s.add(2); }
+/** Which tabs have been reached based on the furthest phase */
+function reachedTabs(phase: Phase): Set<TabId> {
+  const s = new Set<TabId>(["trace"]);
+  if (["shapeCanvas", "style", "renderReady", "rendering", "preview"].includes(phase)) s.add("style");
+  if (["renderReady", "rendering", "preview"].includes(phase)) s.add("done");
   return s;
-}
-
-function stepToPhase(step: 1 | 2 | 3): Phase {
-  if (step === 1) return "shapeCanvas";
-  if (step === 2) return "style";
-  return "renderReady";
 }
 
 const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
@@ -59,11 +61,14 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   const savedMapState = currentProject?.mapState;
 
   const getInitialPhase = (): Phase => {
-    if (savedMapState?.currentStep) return stepToPhase(savedMapState.currentStep as 1 | 2 | 3);
+    if (savedMapState?.currentStep === 2) return "style";
+    if (savedMapState?.currentStep === 3) return "preview";
     return "entry";
   };
 
   const [phase, setPhase] = useState<Phase>(getInitialPhase);
+  const [activeTab, setActiveTab] = useState<TabId>(phaseToTab(getInitialPhase()));
+  const [highestReached, setHighestReached] = useState<Set<TabId>>(() => reachedTabs(getInitialPhase()));
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<MapTemplate | null>(null);
   const [renderedSVG, setRenderedSVG] = useState<string | null>(savedMapState?.renderedSVG || null);
@@ -90,9 +95,17 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   const [templatePublic, setTemplatePublic] = useState(false);
 
   const hasShape = canvasState.paths.length > 0 || selectedTemplate !== null;
-  const currentStep = phaseToStep(phase);
-  const completed = completedStepsForPhase(phase);
   const colors = backgroundColors[stylePrefs.background];
+
+  // Update highest reached when phase changes
+  useEffect(() => {
+    setHighestReached(prev => {
+      const next = new Set(prev);
+      reachedTabs(phase).forEach(t => next.add(t));
+      return next;
+    });
+    setActiveTab(phaseToTab(phase));
+  }, [phase]);
 
   // --- Auto-save every 30 seconds ---
   const saveCanvasState = useCallback(() => {
@@ -231,7 +244,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
     setPhase("rendering");
 
     setTimeout(() => {
-      // Build SVG from canvasState paths + style prefs directly
       const sw = stylePrefs.strokeWeight === "fine" ? 1 : stylePrefs.strokeWeight === "bold" ? 2.5 : 1.8;
       const pathMarkup = canvasState.paths
         .map((p) => `<path d="${p.d}" fill="none" stroke="${colors.stroke}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"/>`)
@@ -245,7 +257,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
       const processed = postProcessSVG(rawSVG, stylePrefs, pins, 600, 600);
       setRenderedSVG(processed);
 
-      // Save rendered SVG to project state
       updateMapState({
         renderedSVG: processed,
         currentStep: 3,
@@ -326,25 +337,64 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
     return "#D94040";
   };
 
+  // Handle tab click — only allow if reached
+  const handleTabClick = (tab: TabId) => {
+    if (!highestReached.has(tab)) return;
+    setActiveTab(tab);
+    // Also switch phase when clicking back to a tab
+    if (tab === "trace") {
+      if (phase !== "entry" && phase !== "upload" && phase !== "traceReview") {
+        setPhase(traceImageDataUrl ? "traceReview" : "shapeCanvas");
+      }
+    } else if (tab === "style") {
+      if (phase !== "shapeCanvas" && phase !== "style") {
+        setPhase("style");
+      }
+    } else if (tab === "done") {
+      if (phase !== "renderReady" && phase !== "rendering" && phase !== "preview") {
+        setPhase(renderedSVG ? "preview" : "renderReady");
+      }
+    }
+  };
+
+  // --- Determine what to show in center ---
+  const isEntryOrUpload = phase === "entry" || phase === "upload";
+  const isTraceReview = phase === "traceReview";
+  const isCanvasPhase = phase === "shapeCanvas" || phase === "style";
+  const isRenderPhase = phase === "renderReady" || phase === "rendering" || phase === "preview";
+
+  // Show right panel only after entry/upload
+  const showRightPanel = !isEntryOrUpload;
+
+  const tabs: Array<{ id: TabId; label: string }> = [
+    { id: "trace", label: "Trace" },
+    { id: "style", label: "Style" },
+    { id: "done", label: "Done" },
+  ];
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <StepIndicator currentStep={currentStep} completedSteps={completed} />
+      {/* Entry / Upload — full screen, no tabs */}
+      {isEntryOrUpload && (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {phase === "entry" && <EntryScreen onSelect={handleEntrySelect} />}
+          {phase === "upload" && (
+            <UploadTraceFlow
+              onImageUploaded={() => {}}
+              onAutoTrace={handleAutoTrace}
+              onManualTrace={handleManualTrace}
+            />
+          )}
+        </div>
+      )}
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {phase === "entry" && <EntryScreen onSelect={handleEntrySelect} />}
-
-        {phase === "upload" && (
-          <UploadTraceFlow
-            onImageUploaded={() => {}}
-            onAutoTrace={handleAutoTrace}
-            onManualTrace={handleManualTrace}
-          />
-        )}
-
-        {phase === "traceReview" && (
+      {/* Main single-page layout: Center + Right panel */}
+      {!isEntryOrUpload && (
+        <div className="flex-1 flex overflow-hidden">
+          {/* CENTER — main canvas / content */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 flex overflow-hidden">
-              {/* Image + SVG overlay */}
+            {/* Trace review center: image + SVG overlay */}
+            {isTraceReview && (
               <div className="flex-1 flex items-center justify-center p-6 bg-muted/20 relative">
                 <div className="relative w-full max-w-[600px]">
                   {traceImageDataUrl && (
@@ -354,7 +404,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                       className="w-full h-auto rounded-lg border border-border"
                     />
                   )}
-                  {/* SVG overlay */}
                   <svg
                     viewBox={`0 0 ${traceImageData?.w || 600} ${traceImageData?.h || 600}`}
                     className="absolute inset-0 w-full h-full"
@@ -375,254 +424,297 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                   </svg>
                 </div>
               </div>
+            )}
 
-              {/* Right panel */}
-              <div className="w-[320px] border-l border-border flex flex-col bg-card">
-                <div className="p-5 space-y-5 flex-1 overflow-y-auto">
-                  <div>
-                    <h3 className="text-base font-serif font-semibold text-foreground mb-1">Does this look right?</h3>
-                    <p className="text-xs text-muted-foreground">
-                      The colored lines show what will be traced. Adjust sensitivity if anything looks off.
-                    </p>
-                  </div>
+            {/* Canvas phase center: EditingCanvas */}
+            {isCanvasPhase && (
+              <EditingCanvas
+                initialTemplate={selectedTemplate}
+                referenceImage={canvasState.referenceImage}
+                canvasState={canvasState}
+                onCanvasChange={setCanvasState}
+                stylePrefs={stylePrefs}
+                onStylePrefsChange={setStylePrefs}
+                onRenderPreview={() => {}}
+                hideStylePanel
+                hideRenderButton
+                canvasRef={canvasRef}
+              />
+            )}
 
-                  {/* Trace summary */}
-                  <div className="bg-muted/40 rounded-lg p-3 space-y-1.5">
-                    <p className="text-sm text-foreground font-medium">{pathCount} {pathCount === 1 ? "shape" : "shapes"} traced</p>
-                    <p className="text-xs text-muted-foreground">{traceGuidance}</p>
-                  </div>
-
-                  {/* Sensitivity slider */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-medium text-foreground">Sensitivity</p>
-                      <span className="text-xs text-muted-foreground">{traceSensitivity.toFixed(2)}</span>
+            {/* Render / Preview center */}
+            {isRenderPhase && (
+              <div className="flex-1 flex items-center justify-center p-6" style={{ backgroundColor: colors.bg }}>
+                {phase === "rendering" ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative w-16 h-16">
+                      <svg viewBox="0 0 64 64" className="w-full h-full">
+                        <path
+                          d="M 8 48 Q 20 20, 32 36 Q 44 52, 56 16"
+                          fill="none"
+                          stroke="hsl(var(--foreground))"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeDasharray="100"
+                          strokeDashoffset="100"
+                        >
+                          <animate attributeName="stroke-dashoffset" from="100" to="0" dur="1.5s" repeatCount="indefinite" />
+                        </path>
+                        <circle r="3" fill="hsl(var(--secondary))">
+                          <animateMotion path="M 8 48 Q 20 20, 32 36 Q 44 52, 56 16" dur="1.5s" repeatCount="indefinite" />
+                        </circle>
+                      </svg>
                     </div>
-                    <Slider
-                      value={[traceSensitivity]}
-                      onValueChange={([v]) => handleSensitivityChange(v)}
-                      min={0.2}
-                      max={0.95}
-                      step={0.01}
-                      className="w-full"
-                    />
-                    <p className="text-[10px] text-muted-foreground">
-                      Lower = fewer edges, higher = more detail (may include noise)
-                    </p>
+                    <h3 className="text-lg font-serif font-semibold text-foreground">Finishing your map...</h3>
+                    <p className="text-sm text-muted-foreground">Applying style and cleaning up strokes</p>
                   </div>
-                </div>
-
-                {/* Footer */}
-                <div className="p-4 border-t border-border space-y-2">
-                  <Button
-                    onClick={() => setPhaseAndSave("shapeCanvas")}
-                    className="w-full bg-primary text-primary-foreground font-semibold"
-                  >
-                    Looks good, continue →
-                  </Button>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs"
-                      onClick={() => {
-                        if (traceImageData && traceImageDataUrl) {
-                          const { w, h } = traceImageData;
-                          const img = new Image();
-                          img.onload = () => {
-                            const c = document.createElement("canvas");
-                            c.width = w;
-                            c.height = h;
-                            const ctx = c.getContext("2d")!;
-                            ctx.drawImage(img, 0, 0, w, h);
-                            const paths = traceOutlineImage(c, w, h, traceSensitivity);
-                            if (paths.length > 0) {
-                              setCanvasState((prev) => ({ ...prev, paths, nodeCount: paths.length * 10 }));
-                            }
-                          };
-                          img.src = traceImageDataUrl;
-                        }
-                      }}
-                    >
-                      Re-trace
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs"
-                      onClick={() => {
-                        setTemplateName("");
-                        setTemplatePublic(false);
-                        setSaveTemplateOpen(true);
-                      }}
-                    >
-                      Save as Template
-                    </Button>
-                  </div>
-                  <button
-                    onClick={() => setPhase("upload")}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-center"
-                  >
-                    ← Back to Upload
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {phase === "shapeCanvas" && (
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <EditingCanvas
-              initialTemplate={selectedTemplate}
-              referenceImage={canvasState.referenceImage}
-              canvasState={canvasState}
-              onCanvasChange={setCanvasState}
-              stylePrefs={stylePrefs}
-              onStylePrefsChange={setStylePrefs}
-              onRenderPreview={() => {}}
-              hideStylePanel
-              hideRenderButton
-              canvasRef={canvasRef}
-            />
-            <div className="px-5 py-3 border-t border-border bg-card flex items-center justify-end gap-4">
-              <span className="text-[12px] text-muted-foreground hidden sm:inline">
-                Happy with the shape? Continue when ready — you can always come back and edit.
-              </span>
-              <Button
-                onClick={() => setPhaseAndSave("style")}
-                className="bg-primary text-primary-foreground font-semibold px-6 shrink-0"
-              >
-                Continue to Style →
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {phase === "style" && (
-          <StyleStep
-            stylePrefs={stylePrefs}
-            onStylePrefsChange={setStylePrefs}
-            canvasState={canvasState}
-            onContinue={() => setPhaseAndSave("renderReady")}
-            onBack={() => setPhaseAndSave("shapeCanvas")}
-          />
-        )}
-
-        {phase === "renderReady" && (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 gap-6" style={{ backgroundColor: colors.bg }}>
-            <div className="flex-1 flex items-center justify-center w-full max-w-[500px]">
-              <svg viewBox="0 0 600 600" className="w-full h-auto">
-                <rect width="600" height="600" fill={colors.bg} />
-                {canvasState.paths.map((p, i) => (
-                  <path
-                    key={i}
-                    d={p.d}
-                    fill="none"
-                    stroke={colors.stroke}
-                    strokeWidth={stylePrefs.strokeWeight === "fine" ? 1 : stylePrefs.strokeWeight === "bold" ? 2.5 : 1.8}
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
+                ) : renderedSVG ? (
+                  <div
+                    className="w-full max-w-[600px] border border-border rounded-lg overflow-hidden shadow-md"
+                    dangerouslySetInnerHTML={{ __html: renderedSVG }}
                   />
-                ))}
-              </svg>
-            </div>
-            <div className="flex flex-col items-center gap-3 w-full max-w-sm">
-              <Button
-                onClick={handleRender}
-                className="w-full bg-primary text-primary-foreground font-bold h-14 text-base"
-              >
-                Render My Map
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                Wrender will finish your map with consistent strokes, terrain marks, a compass rose, and place labels.
-              </p>
-              <p className="text-[11px] text-muted-foreground/50 text-center">
-                This takes about 2 seconds. You can re-render any time after editing.
-              </p>
-              <button
-                onClick={() => setPhaseAndSave("style")}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors mt-1"
-              >
-                ← Back to Style
-              </button>
-            </div>
-            <div className="w-full text-center">
-              <span className="text-[11px] text-muted-foreground">
-                Style: {lineStyleLabels[stylePrefs.lineStyle]} · Ready to render
-              </span>
-            </div>
-          </div>
-        )}
-
-        {phase === "rendering" && (
-          <div className="flex-1 flex flex-col items-center justify-center p-10 gap-4" style={{ backgroundColor: "#FAFAF7" }}>
-            <div className="relative w-16 h-16">
-              <svg viewBox="0 0 64 64" className="w-full h-full">
-                <path
-                  d="M 8 48 Q 20 20, 32 36 Q 44 52, 56 16"
-                  fill="none"
-                  stroke="hsl(var(--foreground))"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeDasharray="100"
-                  strokeDashoffset="100"
-                >
-                  <animate attributeName="stroke-dashoffset" from="100" to="0" dur="1.5s" repeatCount="indefinite" />
-                </path>
-                <circle r="3" fill="hsl(var(--secondary))">
-                  <animateMotion path="M 8 48 Q 20 20, 32 36 Q 44 52, 56 16" dur="1.5s" repeatCount="indefinite" />
-                </circle>
-              </svg>
-            </div>
-            <h3 className="text-lg font-serif font-semibold text-foreground">Finishing your map...</h3>
-            <p className="text-sm text-muted-foreground">Applying style and cleaning up strokes</p>
-          </div>
-        )}
-
-        {phase === "preview" && (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 gap-6" style={{ backgroundColor: colors.bg }}>
-            <div className="flex-1 flex items-center justify-center w-full max-w-[700px]">
-              {renderedSVG ? (
-                <div
-                  className="w-full border border-border rounded-lg overflow-hidden shadow-md"
-                  dangerouslySetInnerHTML={{ __html: renderedSVG }}
-                />
-              ) : (
-                <div className="w-full h-[400px] bg-muted/30 rounded-lg flex items-center justify-center text-muted-foreground">
-                  Map rendered
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col items-center gap-3 w-full max-w-md">
-              <Button
-                onClick={handleUseMap}
-                className="w-full bg-primary text-primary-foreground font-semibold h-12 text-sm"
-              >
-                Use This Map
-              </Button>
-              <div className="flex gap-3">
-                <Button variant="outline" size="sm" onClick={handleExportSVG} className="text-xs">
-                  Export SVG
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleExportPNG} className="text-xs">
-                  Export PNG
-                </Button>
+                ) : (
+                  /* renderReady — preview of raw shape */
+                  <div className="w-full max-w-[500px]">
+                    <svg viewBox="0 0 600 600" className="w-full h-auto">
+                      <rect width="600" height="600" fill={colors.bg} />
+                      {canvasState.paths.map((p, i) => (
+                        <path
+                          key={i}
+                          d={p.d}
+                          fill="none"
+                          stroke={colors.stroke}
+                          strokeWidth={stylePrefs.strokeWeight === "fine" ? 1 : stylePrefs.strokeWeight === "bold" ? 2.5 : 1.8}
+                          strokeLinejoin="round"
+                          strokeLinecap="round"
+                        />
+                      ))}
+                    </svg>
+                  </div>
+                )}
               </div>
-              <button
-                onClick={() => setPhaseAndSave("shapeCanvas")}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
-              >
-                Keep Editing
-              </button>
-              <p className="text-[11px] text-muted-foreground/60 italic text-center">
-                Your map looks exactly like what you drew — just finished and consistent. Edit the shape anytime and re-render instantly.
-              </p>
-            </div>
+            )}
           </div>
-        )}
-      </div>
+
+          {/* RIGHT PANEL — tabbed */}
+          {showRightPanel && (
+            <div className="w-[320px] border-l border-border flex flex-col bg-card shrink-0">
+              {/* Tab bar */}
+              <div className="flex border-b border-border">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  const isReached = highestReached.has(tab.id);
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleTabClick(tab.id)}
+                      disabled={!isReached}
+                      className={`flex-1 py-3 text-sm font-medium transition-all relative ${
+                        isActive
+                          ? "text-foreground"
+                          : isReached
+                          ? "text-muted-foreground hover:text-foreground"
+                          : "text-muted-foreground/30 cursor-not-allowed"
+                      }`}
+                    >
+                      {tab.label}
+                      {isActive && (
+                        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-foreground rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Tab content */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* TRACE TAB */}
+                {activeTab === "trace" && (
+                  <div className="flex-1 flex flex-col">
+                    <div className="p-5 space-y-5 flex-1 overflow-y-auto">
+                      <div>
+                        <h3 className="text-base font-serif font-semibold text-foreground mb-1">Does this look right?</h3>
+                        <p className="text-xs text-muted-foreground">
+                          The colored lines show what will be traced. Adjust sensitivity if anything looks off.
+                        </p>
+                      </div>
+
+                      {/* Trace summary */}
+                      <div className="bg-muted/40 rounded-lg p-3 space-y-1.5">
+                        <p className="text-sm text-foreground font-medium">{pathCount} {pathCount === 1 ? "shape" : "shapes"} traced</p>
+                        <p className="text-xs text-muted-foreground">{traceGuidance}</p>
+                      </div>
+
+                      {/* Sensitivity slider */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-medium text-foreground">Sensitivity</p>
+                          <span className="text-xs text-muted-foreground">{traceSensitivity.toFixed(2)}</span>
+                        </div>
+                        <Slider
+                          value={[traceSensitivity]}
+                          onValueChange={([v]) => handleSensitivityChange(v)}
+                          min={0.2}
+                          max={0.95}
+                          step={0.01}
+                          className="w-full"
+                        />
+                        <p className="text-[10px] text-muted-foreground">
+                          Lower = fewer edges, higher = more detail (may include noise)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Trace tab footer */}
+                    <div className="p-4 border-t border-border space-y-2">
+                      <Button
+                        onClick={() => setPhaseAndSave("shapeCanvas")}
+                        className="w-full bg-primary text-primary-foreground font-semibold"
+                      >
+                        Continue to Style →
+                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => {
+                            if (traceImageData && traceImageDataUrl) {
+                              const { w, h } = traceImageData;
+                              const img = new Image();
+                              img.onload = () => {
+                                const c = document.createElement("canvas");
+                                c.width = w;
+                                c.height = h;
+                                const ctx = c.getContext("2d")!;
+                                ctx.drawImage(img, 0, 0, w, h);
+                                const paths = traceOutlineImage(c, w, h, traceSensitivity);
+                                if (paths.length > 0) {
+                                  setCanvasState((prev) => ({ ...prev, paths, nodeCount: paths.length * 10 }));
+                                }
+                              };
+                              img.src = traceImageDataUrl;
+                            }
+                          }}
+                        >
+                          Re-trace
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => {
+                            setTemplateName("");
+                            setTemplatePublic(false);
+                            setSaveTemplateOpen(true);
+                          }}
+                        >
+                          Save as Template
+                        </Button>
+                      </div>
+                      <button
+                        onClick={() => setPhase("upload")}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-center"
+                      >
+                        ← Back to Upload
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* STYLE TAB */}
+                {activeTab === "style" && (
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex-1 overflow-y-auto">
+                      <div className="p-6">
+                        <h3 className="text-base font-serif font-semibold text-foreground mb-1">Style your map</h3>
+                        <p className="text-xs text-muted-foreground mb-6">
+                          These are saved for this project. You can change them any time.
+                        </p>
+                      </div>
+                      <StylePreferencesPanel prefs={stylePrefs} onChange={setStylePrefs} forceExpanded />
+                    </div>
+
+                    {/* Style tab footer */}
+                    <div className="p-4 border-t border-border flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          setPhaseAndSave(traceImageDataUrl ? "traceReview" : "shapeCanvas");
+                          setActiveTab("trace");
+                        }}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        ← Back to Trace
+                      </button>
+                      <Button
+                        onClick={() => {
+                          handleRender();
+                        }}
+                        className="bg-primary text-primary-foreground font-semibold px-6"
+                      >
+                        Render & Save →
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* DONE TAB */}
+                {activeTab === "done" && (
+                  <div className="flex-1 flex flex-col">
+                    <div className="p-5 space-y-5 flex-1 overflow-y-auto">
+                      <div>
+                        <h3 className="text-base font-serif font-semibold text-foreground mb-1">Your map is ready</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Use it in your project, export it, or keep editing.
+                        </p>
+                      </div>
+
+                      {/* Thumbnail preview */}
+                      {renderedSVG && (
+                        <div
+                          className="w-full border border-border rounded-lg overflow-hidden"
+                          dangerouslySetInnerHTML={{ __html: renderedSVG }}
+                        />
+                      )}
+
+                      <p className="text-[11px] text-muted-foreground/60 italic">
+                        Your map looks exactly like what you drew — just finished and consistent. Edit the shape anytime and re-render instantly.
+                      </p>
+                    </div>
+
+                    {/* Done tab footer */}
+                    <div className="p-4 border-t border-border space-y-3">
+                      <Button
+                        onClick={handleUseMap}
+                        className="w-full bg-primary text-primary-foreground font-semibold h-11"
+                      >
+                        Use This Map
+                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={handleExportSVG} className="flex-1 text-xs">
+                          Export SVG
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleExportPNG} className="flex-1 text-xs">
+                          Export PNG
+                        </Button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setPhaseAndSave("shapeCanvas");
+                          setActiveTab("style");
+                        }}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2 w-full text-center"
+                      >
+                        Keep Editing
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <TemplatePicker
         open={templatePickerOpen}
