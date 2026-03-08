@@ -42,10 +42,12 @@ interface MapBuilderCanvasProps {
   onStateChange?: () => void;
   width?: number;
   height?: number;
+  brushWidth?: number;
+  eraserRadius?: number;
 }
 
 const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
-  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height }, ref) => {
+  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height, brushWidth, eraserRadius }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasElRef = useRef<HTMLCanvasElement>(null);
     const fabricRef = useRef<Canvas | null>(null);
