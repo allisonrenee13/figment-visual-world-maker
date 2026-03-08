@@ -663,263 +663,13 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
       gray[i] = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
     }
 
-    // STEP 1 — Detect image type
-    let brightCount = 0;
-    let darkCount = 0;
-    for (let i = 0; i < w * h; i++) {
-      if (gray[i] > 200) brightCount++;
-      if (gray[i] < 80) darkCount++;
-    }
-    const totalPixels = w * h;
-    const isOutlineMode = (brightCount / totalPixels > 0.6) && (darkCount > 0);
+    console.log(`[tracer] ${w}x${h}, mode=sobel-unified`);
 
-    console.log(`[tracer] ${w}x${h}, bright=${(brightCount/totalPixels*100).toFixed(1)}%, dark=${darkCount}, mode=${isOutlineMode ? 'outline' : 'sobel'}`);
-
-    if (isOutlineMode) {
-      return traceOutlineMode(gray, w, h, sensitivity);
-    } else {
-      return traceSobelMode(gray, w, h, sensitivity);
-    }
+    return traceSobelMode(gray, w, h, sensitivity);
   } catch (err) {
     console.error("[tracer] crashed:", err);
     return [];
   }
-}
-function traceOutlineMode(gray: Float32Array, w: number, h: number, sensitivity: number): TracedPath[] {
-  console.log("[tracer:outline] starting Zhang-Suen pipeline, sensitivity=", sensitivity);
-
-  // STEP 1 — Binary threshold
-  const ink = new Uint8Array(w * h);
-  for (let i = 0; i < w * h; i++) {
-    ink[i] = gray[i] < 128 ? 1 : 0;
-  }
-
-  // Zero out 4px border
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      if (x < 4 || x >= w - 4 || y < 4 || y >= h - 4) {
-        ink[y * w + x] = 0;
-      }
-    }
-  }
-
-  // STEP 2 — Zhang-Suen thinning
-  // Neighbors indexed as: p2=N, p3=NE, p4=E, p5=SE, p6=S, p7=SW, p8=W, p9=NW
-  const getP = (x: number, y: number): number => {
-    if (x < 0 || x >= w || y < 0 || y >= h) return 0;
-    return ink[y * w + x];
-  };
-
-  let changed = true;
-  let iterations = 0;
-  const maxIterations = 500; // safety cap
-  while (changed && iterations < maxIterations) {
-    changed = false;
-    iterations++;
-
-    // Sub-iteration 1
-    const toDelete1: number[] = [];
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        if (!ink[y * w + x]) continue;
-        const p2 = getP(x, y - 1);
-        const p3 = getP(x + 1, y - 1);
-        const p4 = getP(x + 1, y);
-        const p5 = getP(x + 1, y + 1);
-        const p6 = getP(x, y + 1);
-        const p7 = getP(x - 1, y + 1);
-        const p8 = getP(x - 1, y);
-        const p9 = getP(x - 1, y - 1);
-
-        const B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-        if (B < 2 || B > 6) continue;
-
-        // A(p) = number of 0→1 transitions in p2,p3,p4,p5,p6,p7,p8,p9,p2
-        const seq = [p2, p3, p4, p5, p6, p7, p8, p9];
-        let A = 0;
-        for (let i = 0; i < 8; i++) {
-          if (seq[i] === 0 && seq[(i + 1) % 8] === 1) A++;
-        }
-        if (A !== 1) continue;
-
-        if (p2 * p4 * p6 !== 0) continue;
-        if (p4 * p6 * p8 !== 0) continue;
-
-        toDelete1.push(y * w + x);
-      }
-    }
-    for (const idx of toDelete1) {
-      ink[idx] = 0;
-      changed = true;
-    }
-
-    // Sub-iteration 2
-    const toDelete2: number[] = [];
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        if (!ink[y * w + x]) continue;
-        const p2 = getP(x, y - 1);
-        const p3 = getP(x + 1, y - 1);
-        const p4 = getP(x + 1, y);
-        const p5 = getP(x + 1, y + 1);
-        const p6 = getP(x, y + 1);
-        const p7 = getP(x - 1, y + 1);
-        const p8 = getP(x - 1, y);
-        const p9 = getP(x - 1, y - 1);
-
-        const B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-        if (B < 2 || B > 6) continue;
-
-        const seq = [p2, p3, p4, p5, p6, p7, p8, p9];
-        let A = 0;
-        for (let i = 0; i < 8; i++) {
-          if (seq[i] === 0 && seq[(i + 1) % 8] === 1) A++;
-        }
-        if (A !== 1) continue;
-
-        if (p2 * p4 * p8 !== 0) continue;
-        if (p2 * p6 * p8 !== 0) continue;
-
-        toDelete2.push(y * w + x);
-      }
-    }
-    for (const idx of toDelete2) {
-      ink[idx] = 0;
-      changed = true;
-    }
-  }
-
-  console.log(`[tracer:outline] Zhang-Suen completed in ${iterations} iterations`);
-
-  // Count remaining skeleton pixels
-  let skelCount = 0;
-  for (let i = 0; i < w * h; i++) {
-    if (ink[i]) skelCount++;
-  }
-  console.log(`[tracer:outline] skeleton pixels: ${skelCount}`);
-
-  // STEP 3 — Chain skeleton pixels into paths via DFS (8-connectivity)
-  const visited = new Uint8Array(w * h);
-  const chains: Array<Array<{ x: number; y: number }>> = [];
-  const minChainLen = Math.max(8, Math.round((1 - sensitivity) * 150));
-
-  const dx8 = [-1, 0, 1, -1, 1, -1, 0, 1];
-  const dy8 = [-1, -1, -1, 0, 0, 1, 1, 1];
-
-  // Find endpoints and junctions first for better chaining
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      const idx = y * w + x;
-      if (!ink[idx] || visited[idx]) continue;
-
-      // DFS chain
-      const stack: Array<{ x: number; y: number }> = [{ x, y }];
-      const chain: Array<{ x: number; y: number }> = [];
-      visited[idx] = 1;
-
-      while (stack.length > 0) {
-        const cur = stack.pop()!;
-        chain.push(cur);
-
-        for (let d = 0; d < 8; d++) {
-          const nx = cur.x + dx8[d];
-          const ny = cur.y + dy8[d];
-          if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-          const nIdx = ny * w + nx;
-          if (ink[nIdx] && !visited[nIdx]) {
-            visited[nIdx] = 1;
-            stack.push({ x: nx, y: ny });
-          }
-        }
-      }
-
-      if (chain.length >= minChainLen) {
-        // Sort chain points to form a coherent path via nearest-neighbor ordering
-        const ordered = orderChainPoints(chain);
-        chains.push(ordered);
-      }
-    }
-  }
-
-  console.log(`[tracer:outline] found ${chains.length} chains, minLen=${minChainLen}`);
-
-  // Sort by size, keep top 250
-  chains.sort((a, b) => b.length - a.length);
-  const kept = chains.slice(0, 250);
-
-  // Douglas-Peucker with epsilon=1.5
-  const results: TracedPath[] = [];
-  for (const chain of kept) {
-    const simplified = douglasPeucker(chain, 1.5);
-    if (simplified.length < 2) continue;
-
-    let d = `M ${simplified[0].x} ${simplified[0].y}`;
-    for (let i = 1; i < simplified.length; i++) {
-      d += ` L ${simplified[i].x} ${simplified[i].y}`;
-    }
-
-    // Close if start ≈ end
-    const first = simplified[0], last = simplified[simplified.length - 1];
-    if (Math.abs(first.x - last.x) < 5 && Math.abs(first.y - last.y) < 5) {
-      d += " Z";
-    }
-
-    // STEP 4 — Filter border-spanning paths
-    const xs = simplified.map(p => p.x);
-    const ys = simplified.map(p => p.y);
-    const bboxW = Math.max(...xs) - Math.min(...xs);
-    const bboxH = Math.max(...ys) - Math.min(...ys);
-    if (bboxW > w * 0.85 || bboxH > h * 0.85) continue;
-
-    results.push({ d, confidence: 1.0 });
-  }
-
-  console.log(`[tracer:outline] final paths: ${results.length}`);
-  return results;
-}
-
-/**
- * Order a set of chain points into a coherent path using nearest-neighbor traversal.
- * DFS can visit pixels in arbitrary order; this reorders them spatially.
- */
-function orderChainPoints(points: Array<{ x: number; y: number }>): Array<{ x: number; y: number }> {
-  if (points.length <= 2) return points;
-
-  // Find a good starting point: prefer an endpoint (pixel with fewest neighbors in the set)
-  // For speed, just start from the topmost-leftmost point
-  let startIdx = 0;
-  for (let i = 1; i < points.length; i++) {
-    if (points[i].y < points[startIdx].y || (points[i].y === points[startIdx].y && points[i].x < points[startIdx].x)) {
-      startIdx = i;
-    }
-  }
-
-  const used = new Uint8Array(points.length);
-  const ordered: Array<{ x: number; y: number }> = [];
-  let curIdx = startIdx;
-
-  for (let step = 0; step < points.length; step++) {
-    used[curIdx] = 1;
-    ordered.push(points[curIdx]);
-
-    // Find nearest unused point
-    let bestDist = Infinity;
-    let bestIdx = -1;
-    for (let i = 0; i < points.length; i++) {
-      if (used[i]) continue;
-      const dx = points[i].x - points[curIdx].x;
-      const dy = points[i].y - points[curIdx].y;
-      const dist = dx * dx + dy * dy;
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestIdx = i;
-      }
-    }
-    if (bestIdx === -1) break;
-    curIdx = bestIdx;
-  }
-
-  return ordered;
 }
 
 // --- SOBEL MODE: for photos and complex maps (existing pipeline) ---
@@ -975,6 +725,37 @@ function traceSobelMode(gray: Float32Array, w: number, h: number, sensitivity: n
     isEdge[i] = magnitude[i] >= threshold ? 1 : 0;
   }
 
+  // FIX 1a — Zero out 6px border to eliminate image frame artifacts
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (x < 6 || x >= w - 6 || y < 6 || y >= h - 6) {
+        isEdge[y * w + x] = 0;
+      }
+    }
+  }
+
+  // FIX 2 — Two passes of binary erosion (3x3) to merge double-edges on thick strokes
+  for (let pass = 0; pass < 2; pass++) {
+    const eroded = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const idx = y * w + x;
+        if (!isEdge[idx]) continue;
+        // Keep pixel only if ALL 8 neighbors are also edge
+        let allNeighbors = true;
+        for (let dy = -1; dy <= 1 && allNeighbors; dy++) {
+          for (let dx = -1; dx <= 1 && allNeighbors; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            if (!isEdge[(y + dy) * w + (x + dx)]) allNeighbors = false;
+          }
+        }
+        eroded[idx] = allNeighbors ? 1 : 0;
+      }
+    }
+    // Copy eroded back
+    for (let i = 0; i < w * h; i++) isEdge[i] = eroded[i];
+  }
+
   const visited = new Uint8Array(w * h);
   const components: Array<{ points: Array<{ x: number; y: number }>; totalMag: number }> = [];
 
@@ -1023,6 +804,18 @@ function traceSobelMode(gray: Float32Array, w: number, h: number, sensitivity: n
     const ordered = orderPoints(comp.points);
     const simplified = douglasPeucker(ordered, 1.8);
     if (simplified.length < 2) continue;
+
+    // FIX 1b — Filter straight-line artifacts: discard paths where
+    // bounding box perimeter / point count > 4.0
+    const xs = simplified.map(p => p.x);
+    const ys = simplified.map(p => p.y);
+    const bboxW = Math.max(...xs) - Math.min(...xs);
+    const bboxH = Math.max(...ys) - Math.min(...ys);
+    const bboxPerimeter = 2 * (bboxW + bboxH);
+    if (simplified.length > 0 && bboxPerimeter / simplified.length > 4.0) continue;
+
+    // Also discard border-spanning paths (>85% of canvas)
+    if (bboxW > w * 0.85 || bboxH > h * 0.85) continue;
 
     let d = `M ${simplified[0].x} ${simplified[0].y}`;
     for (let i = 1; i < simplified.length; i++) {
