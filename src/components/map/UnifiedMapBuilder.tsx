@@ -481,18 +481,40 @@ const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: Unifie
 
             {/* Canvas phase center: EditingCanvas */}
             {isCanvasPhase && (
-              <EditingCanvas
-                initialTemplate={selectedTemplate}
-                referenceImage={canvasState.referenceImage}
-                canvasState={canvasState}
-                onCanvasChange={setCanvasState}
-                stylePrefs={stylePrefs}
-                onStylePrefsChange={setStylePrefs}
-                onRenderPreview={() => {}}
-                hideStylePanel
-                hideRenderButton
-                canvasRef={canvasRef}
-              />
+              <div className="flex-1 relative">
+                <EditingCanvas
+                  initialTemplate={selectedTemplate}
+                  referenceImage={canvasState.referenceImage}
+                  canvasState={canvasState}
+                  onCanvasChange={setCanvasState}
+                  stylePrefs={stylePrefs}
+                  onStylePrefsChange={setStylePrefs}
+                  onRenderPreview={() => {}}
+                  hideStylePanel
+                  hideRenderButton
+                  canvasRef={canvasRef}
+                  overrideActiveTool={phase === "add" ? "pan" : undefined}
+                  placingPin={placingPin}
+                  onPinPlaced={(x, y) => {
+                    setPendingPin({ x, y });
+                    setPlacingPin(false);
+                    setPinDialogOpen(true);
+                  }}
+                />
+                {/* Pin overlay */}
+                {phase === "add" && currentProject?.pins.map(pin => (
+                  <div key={pin.id} style={{
+                    position: "absolute",
+                    left: `${pin.x}%`,
+                    top: `${pin.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    zIndex: 10,
+                    pointerEvents: "none"
+                  }}>
+                    <div className="w-3 h-3 rounded-full bg-destructive border-2 border-white shadow-sm" />
+                  </div>
+                ))}
+              </div>
             )}
 
             {/* Render / Preview center */}
