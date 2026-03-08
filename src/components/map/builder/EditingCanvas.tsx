@@ -48,7 +48,7 @@ const EditingCanvas = ({
   console.log("[EditingCanvas] activeTool:", activeTool);
   const [nodeCount, setNodeCount] = useState(0);
   const [objectCount, setObjectCount] = useState(0);
-  const [refOpacity, setRefOpacity] = useState(canvasState.referenceOpacity);
+  const [showReference, setShowReference] = useState(false);
   const templateLoadedRef = useRef(false);
   const initialLoadDone = useRef(false); // Guard: only load paths once on mount
   const [showGuidance, setShowGuidance] = useState(() => {
@@ -191,18 +191,7 @@ const EditingCanvas = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync reference opacity when parent changes it (e.g. toggle in Edit tab)
-  useEffect(() => {
-    if (canvasState.referenceOpacity !== refOpacity) {
-      setRefOpacity(canvasState.referenceOpacity);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasState.referenceOpacity]);
-
-  const handleRefOpacityChange = (value: number) => {
-    setRefOpacity(value);
-    onCanvasChange({ ...canvasState, referenceOpacity: value });
-  };
+  const toggleReference = useCallback(() => setShowReference(v => !v), []);
 
   const handleGuidanceDismiss = () => {
     setShowGuidance(false);
@@ -238,28 +227,45 @@ const EditingCanvas = ({
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-auto flex items-center justify-center p-4 bg-muted/20 relative">
             <div className="border border-border rounded shadow-sm overflow-hidden relative w-full" style={{ maxWidth: 800 }}>
-              <MapBuilderCanvas
-                ref={(handle) => {
-                  if (externalCanvasRef) {
-                    (externalCanvasRef as React.MutableRefObject<MapCanvasHandle | null>).current = handle;
-                  }
-                  const wasNull = internalRef.current === null;
-                  internalRef.current = handle;
-                  if (handle && wasNull) {
-                    requestAnimationFrame(handleCanvasReady);
-                  }
-                }}
-                stylePrefs={stylePrefs}
-                activeTool={activeTool}
-                activeStamp={null}
-                onStateChange={handleStateChange}
-                width={800}
-                height={600}
-                brushWidth={activeTool === "pen" ? penWidthMap[brushWeight] : undefined}
-                eraserRadius={activeTool === "eraser" ? eraserSize : undefined}
-                referenceImageUrl={referenceImage}
-                referenceOpacity={canvasState.referenceOpacity}
-              />
+              {/* Reference image overlay (React-managed, immune to undo) */}
+              {referenceImage && showReference && (
+                <img
+                  src={referenceImage}
+                  alt=""
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    opacity: 0.3,
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }}
+                />
+              )}
+              <div style={{ position: "relative", zIndex: 2 }}>
+                <MapBuilderCanvas
+                  ref={(handle) => {
+                    if (externalCanvasRef) {
+                      (externalCanvasRef as React.MutableRefObject<MapCanvasHandle | null>).current = handle;
+                    }
+                    const wasNull = internalRef.current === null;
+                    internalRef.current = handle;
+                    if (handle && wasNull) {
+                      requestAnimationFrame(handleCanvasReady);
+                    }
+                  }}
+                  stylePrefs={stylePrefs}
+                  activeTool={activeTool}
+                  activeStamp={null}
+                  onStateChange={handleStateChange}
+                  width={800}
+                  height={600}
+                  brushWidth={activeTool === "pen" ? penWidthMap[brushWeight] : undefined}
+                  eraserRadius={activeTool === "eraser" ? eraserSize : undefined}
+                />
+              </div>
 
               {/* Empty canvas prompt */}
               {showEmptyPrompt && <EmptyCanvasPrompt />}
@@ -269,19 +275,20 @@ const EditingCanvas = ({
             </div>
           </div>
 
-          {/* Reference opacity slider */}
+          {/* Reference toggle bar */}
           {referenceImage && (
             <div className="flex items-center gap-3 px-5 py-2 border-t border-border bg-card">
-              <span className="text-[11px] text-muted-foreground whitespace-nowrap">Reference opacity</span>
-              <Slider
-                value={[refOpacity]}
-                onValueChange={([v]) => handleRefOpacityChange(v)}
-                min={20}
-                max={80}
-                step={5}
-                className="w-40"
-              />
-              <span className="text-[11px] text-muted-foreground w-8">{refOpacity}%</span>
+              <span className="text-[11px] text-muted-foreground whitespace-nowrap">Reference overlay</span>
+              <button
+                onClick={toggleReference}
+                className={`w-9 h-[18px] rounded-full transition-colors relative flex-shrink-0 ${
+                  showReference ? "bg-primary" : "bg-muted-foreground/30"
+                }`}
+              >
+                <span className={`absolute top-[1px] w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                  showReference ? "translate-x-[18px]" : "translate-x-[1px]"
+                }`} />
+              </button>
             </div>
           )}
 
