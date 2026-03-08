@@ -86,6 +86,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   }, [updateCurrentProject]);
 
   const confirmMap = useCallback((renderedSVG?: string) => {
+    console.log("[confirmMap] renderedSVG length:", renderedSVG?.length ?? 0);
     updateCurrentProject((p) => {
       const version: MapVersion = {
         id: genId(),
