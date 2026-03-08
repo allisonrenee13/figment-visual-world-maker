@@ -672,8 +672,77 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   );
 };
 
-// --- Improved Client-side image edge tracing ---
-function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensitivity = 0.65): TracedPath[] {
+// --- Potrace-based tracing ---
+function runPotraceOnCanvas(canvas: HTMLCanvasElement, w: number, h: number, sensitivity: number): TracedPath[] {
+  try {
+    // Map sensitivity (0.2–0.95) to potrace threshold (180–80)
+    const threshold = Math.round(180 - (sensitivity - 0.2) * (100 / 0.75));
+
+    console.log(`[tracer] potrace ${w}x${h}, threshold=${threshold}, sensitivity=${sensitivity}`);
+
+    const result = (POTRACE as any).trace(canvas, {
+      turdsize: 4,
+      alphamax: 1.0,
+      optcurve: true,
+      opttolerance: 0.2,
+      threshold,
+    });
+
+    // Get SVG string from potrace result
+    const svgString = (POTRACE as any).getSVG(result);
+
+    // Parse out <path d="..."> elements from the SVG string
+    const pathRegex = /<path\s[^>]*d="([^"]+)"[^>]*>/gi;
+    const paths: TracedPath[] = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = pathRegex.exec(svgString)) !== null) {
+      const d = match[1];
+      if (d && d.trim().length > 0) {
+        paths.push({ d, confidence: 1.0 });
+      }
+    }
+
+    console.log(`[tracer] potrace found ${paths.length} paths`);
+    return paths;
+  } catch (err) {
+    console.error("[tracer] potrace error:", err);
+    return [];
+  }
+}
+
+function generateOutlinePath(w: number, h: number): TracedPath {
+  const cx = w / 2;
+  const cy = h / 2;
+  const r = Math.min(w, h) * 0.35;
+
+  const variations = [1.0, 0.88, 1.1, 0.92, 0.85, 1.05, 0.95, 1.08, 1.0, 0.9, 1.12, 0.87, 0.95, 1.02, 0.88, 1.0];
+  const cpOffsets = [8, -10, 12, -8, 10, -12, 6, -9, 11, -7, 9, -11, 7, -8, 10, -6];
+
+  const points: Array<{ x: number; y: number }> = [];
+  const steps = 16;
+  for (let i = 0; i < steps; i++) {
+    const a = (i / steps) * Math.PI * 2;
+    const variation = r * variations[i];
+    points.push({
+      x: cx + Math.cos(a) * variation,
+      y: cy + Math.sin(a) * variation,
+    });
+  }
+
+  let d = `M ${points[0].x.toFixed(0)} ${points[0].y.toFixed(0)}`;
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const cpx = (prev.x + curr.x) / 2 + cpOffsets[i];
+    const cpy = (prev.y + curr.y) / 2 + cpOffsets[(i + 4) % 16];
+    d += ` Q ${cpx.toFixed(0)} ${cpy.toFixed(0)} ${curr.x.toFixed(0)} ${curr.y.toFixed(0)}`;
+  }
+  d += " Z";
+  return { d, confidence: 0.5 };
+}
+
+export default UnifiedMapBuilder;
   try {
     const { data } = imageData;
 
