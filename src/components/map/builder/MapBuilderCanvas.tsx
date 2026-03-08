@@ -29,8 +29,6 @@ export interface MapCanvasHandle {
   redo: () => void;
   getJSON: () => string;
   loadJSON: (json: string) => void;
-  addReferenceImage: (url: string, opacity: number) => void;
-  setReferenceOpacity: (opacity: number) => void;
   getNodeCount: () => number;
   getObjectCount: () => number;
   setBrushWidth: (width: number) => void;
@@ -45,17 +43,18 @@ interface MapBuilderCanvasProps {
   height?: number;
   brushWidth?: number;
   eraserRadius?: number;
+  referenceImageUrl?: string | null;
+  referenceOpacity?: number;
 }
 
 const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
-  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height, brushWidth, eraserRadius }, ref) => {
+  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height, brushWidth, eraserRadius, referenceImageUrl, referenceOpacity: refOpacityProp }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasElRef = useRef<HTMLCanvasElement>(null);
     const fabricRef = useRef<Canvas | null>(null);
     const historyRef = useRef<string[]>([]);
     const historyIndexRef = useRef(-1);
     const isLoadingRef = useRef(false);
-    const refImageRef = useRef<FabricImage | null>(null);
     const sculptingRef = useRef(false);
     const eraserSizeRef = useRef(eraserRadius ?? 24);
 
