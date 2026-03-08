@@ -74,9 +74,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       if (isBusy.current) return;
       const canvas = fabricRef.current;
       if (!canvas) return;
-      const snap = JSON.stringify(
-        canvas.toJSON(["data", "selectable", "evented", "excludeFromExport", "strokeWidth"])
-      );
+      const snap = JSON.stringify(canvas.toJSON());
       if (snap === history.current[historyIndex.current]) return;
       history.current = history.current.slice(0, historyIndex.current + 1);
       history.current.push(snap);
