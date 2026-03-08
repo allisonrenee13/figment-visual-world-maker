@@ -14,7 +14,7 @@ interface StyleStepProps {
   isRendering?: boolean;
 }
 
-const StyleStep = ({ stylePrefs, onStylePrefsChange, canvasState, onContinue, onBack }: StyleStepProps) => {
+const StyleStep = ({ stylePrefs, onStylePrefsChange, canvasState, onContinue, onBack, renderButtonLabel, isRendering }: StyleStepProps) => {
   const colors = backgroundColors[stylePrefs.background];
 
   return (
