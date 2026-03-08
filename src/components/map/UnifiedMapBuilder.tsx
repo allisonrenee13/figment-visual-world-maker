@@ -156,6 +156,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
 
   // --- Handlers ---
   const handleEntrySelect = (path: BuilderPath) => {
+    setIsPoorTrace(false);
     if (path === "template") {
       setTemplatePickerOpen(true);
     } else if (path === "upload") {
