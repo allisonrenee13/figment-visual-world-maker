@@ -580,129 +580,128 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                       {/* 1. Heading */}
                       <h3 className="text-base font-serif font-semibold text-foreground">Your trace is ready</h3>
 
-                      {/* 2. Sensitivity slider / Clean / Poor trace / Loading */}
-                      {retraceStatus === "running" ? (
+                      {/* STATE 1: Loading */}
+                      {retraceStatus === "running" && (
                         <p className="text-xs text-muted-foreground animate-pulse">Analysing your image...</p>
-                      ) : isPoorTrace ? (
-                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
-                          <p className="text-xs font-medium text-amber-800">
-                            This map is too detailed to auto-trace cleanly.
-                          </p>
-                          <p className="text-xs text-amber-700">
-                            Try "Trace manually" to draw over it yourself, or "Browse Templates" for a similar shape.
-                          </p>
-                        </div>
-                      ) : isCleanOutline ? (
-                        <div className="flex items-center gap-2 py-2">
-                          <span className="text-sm" style={{ color: "#2EAA5E" }}>✓</span>
-                          <p className="text-xs" style={{ color: "#2EAA5E" }}>
-                            Clean outline detected — your trace looks great.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-medium text-foreground">Sensitivity</p>
-                            <span className="text-xs text-muted-foreground">{traceSensitivity.toFixed(2)}</span>
-                          </div>
-                          <Slider
-                            value={[traceSensitivity]}
-                            onValueChange={([v]) => handleSensitivityChange(v)}
-                            min={0.2}
-                            max={0.95}
-                            step={0.01}
-                            className="w-full"
-                          />
-                          <p className="text-[10px] text-muted-foreground">
-                            Lower = fewer edges, higher = more detail (may include noise)
-                          </p>
-                          {retraceStatus === "done" && (
-                            <p className="text-[11px]" style={{ color: "#2EAA5E" }}>
-                              ✓ {canvasState.paths.length} shapes found
-                            </p>
-                          )}
-                        </div>
                       )}
 
-                      {/* Edit hint */}
-                      <p className="text-xs text-muted-foreground/80">
-                        In the Edit step you can draw missing lines and erase anything that doesn't look right.
-                      </p>
+                      {/* STATE 2: Poor trace */}
+                      {retraceStatus !== "running" && isPoorTrace && (
+                        <>
+                          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
+                            <p className="text-xs font-medium text-amber-800">
+                              This map is too detailed to auto-trace.
+                            </p>
+                            <p className="text-xs text-amber-700">
+                              Choose an option below to continue.
+                            </p>
+                          </div>
 
-                      {/* 3. "Not quite right?" text */}
-                      <p className="text-xs text-muted-foreground">Not quite right? You can also:</p>
+                          <div className="space-y-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full text-xs"
+                              onClick={() => handleEntrySelect("template")}
+                            >
+                              Browse Templates →
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full text-xs"
+                              onClick={() => handleEntrySelect("draw")}
+                            >
+                              Draw from scratch →
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full text-xs"
+                              onClick={() => {
+                                if (traceImageDataUrl) handleManualTrace(traceImageDataUrl);
+                              }}
+                            >
+                              Trace manually →
+                            </Button>
+                          </div>
+                        </>
+                      )}
 
-                      {/* 4. Two option buttons side by side */}
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 text-xs"
-                          onClick={() => handleEntrySelect("template")}
-                        >
-                          Browse Templates →
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 text-xs"
-                          onClick={() => handleEntrySelect("draw")}
-                        >
-                          Draw from scratch →
-                        </Button>
-                      </div>
+                      {/* STATE 3: Normal (good trace) */}
+                      {retraceStatus !== "running" && !isPoorTrace && (
+                        <>
+                          {isCleanOutline ? (
+                            <div className="flex items-center gap-2 py-2">
+                              <span className="text-sm" style={{ color: "#2EAA5E" }}>✓</span>
+                              <p className="text-xs" style={{ color: "#2EAA5E" }}>
+                                Clean outline detected — your trace looks great.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-medium text-foreground">Sensitivity</p>
+                                <span className="text-xs text-muted-foreground">{traceSensitivity.toFixed(2)}</span>
+                              </div>
+                              <Slider
+                                value={[traceSensitivity]}
+                                onValueChange={([v]) => handleSensitivityChange(v)}
+                                min={0.2}
+                                max={0.95}
+                                step={0.01}
+                                className="w-full"
+                              />
+                              <p className="text-[10px] text-muted-foreground">
+                                Lower = fewer edges, higher = more detail (may include noise)
+                              </p>
+                              {retraceStatus === "done" && (
+                                <p className="text-[11px]" style={{ color: "#2EAA5E" }}>
+                                  ✓ {canvasState.paths.length} shapes found
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          <p className="text-xs text-muted-foreground/80">
+                            In the Edit step you can draw missing lines and erase anything that doesn't look right.
+                          </p>
+
+                          <p className="text-xs text-muted-foreground">Not quite right? You can also:</p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-xs"
+                              onClick={() => handleEntrySelect("template")}
+                            >
+                              Browse Templates →
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-xs"
+                              onClick={() => handleEntrySelect("draw")}
+                            >
+                              Draw from scratch →
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Trace tab footer */}
                     <div className="p-4 border-t border-border space-y-2">
-                      {/* 5. Re-trace and Save as Template */}
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 text-xs"
-                          disabled={retraceStatus === "running"}
-                          onClick={() => {
-                            if (traceImageData && traceImageDataUrl) {
-                              const { w, h } = traceImageData;
-                              setRetraceStatus("running");
-                              const img = new Image();
-                              img.onload = () => {
-                                const c = document.createElement("canvas");
-                                c.width = w;
-                                c.height = h;
-                                const ctx = c.getContext("2d")!;
-                                ctx.drawImage(img, 0, 0, w, h);
-                                const paths = traceOutlineImage(c, w, h, traceSensitivity);
-                                if (paths.length > 0) {
-                                  setCanvasState((prev) => ({ ...prev, paths, nodeCount: paths.length * 10 }));
-                                }
-                                setRetraceStatus("done");
-                                setTimeout(() => setRetraceStatus("idle"), 2000);
-                              };
-                              img.src = traceImageDataUrl;
-                            }
-                          }}
-                        >
-                          {retraceStatus === "running" ? "Retracing…" : retraceStatus === "done" ? "✓ Done" : "Re-trace"}
+                      {/* STATE 1: Loading footer */}
+                      {retraceStatus === "running" && (
+                        <Button disabled className="w-full opacity-50">
+                          Analysing...
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 text-xs"
-                          onClick={() => {
-                            setTemplateName("");
-                            setTemplatePublic(false);
-                            setSaveTemplateOpen(true);
-                          }}
-                        >
-                          Save as Template
-                        </Button>
-                      </div>
+                      )}
 
-                      {/* 6. Continue to Edit */}
-                      {isPoorTrace ? (
-                        <div className="p-4 border-t border-border space-y-2">
+                      {/* STATE 2: Poor trace footer */}
+                      {retraceStatus !== "running" && isPoorTrace && (
+                        <>
                           <Button
                             onClick={() => {
                               if (traceImageDataUrl) handleManualTrace(traceImageDataUrl);
@@ -721,26 +720,74 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                           >
                             Continue with this trace anyway
                           </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          onClick={() => {
-                            if (traceImageDataUrl) {
-                              setCanvasState(prev => ({
-                                ...prev,
-                                referenceImage: traceImageDataUrl,
-                              }));
-                            }
-                            setPhaseAndSave("shapeCanvas");
-                            setActiveTab("edit");
-                          }}
-                          className="w-full bg-primary text-primary-foreground font-semibold"
-                        >
-                          Continue to Edit →
-                        </Button>
+                        </>
                       )}
 
-                      {/* 7. Give feedback — very bottom */}
+                      {/* STATE 3: Normal footer */}
+                      {retraceStatus !== "running" && !isPoorTrace && (
+                        <>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-xs"
+                              
+                              onClick={() => {
+                                if (traceImageData && traceImageDataUrl) {
+                                  const { w, h } = traceImageData;
+                                  setRetraceStatus("running");
+                                  const img = new Image();
+                                  img.onload = () => {
+                                    const c = document.createElement("canvas");
+                                    c.width = w;
+                                    c.height = h;
+                                    const ctx = c.getContext("2d")!;
+                                    ctx.drawImage(img, 0, 0, w, h);
+                                    const paths = traceOutlineImage(c, w, h, traceSensitivity);
+                                    if (paths.length > 0) {
+                                      setCanvasState((prev) => ({ ...prev, paths, nodeCount: paths.length * 10 }));
+                                    }
+                                    setRetraceStatus("done");
+                                    setTimeout(() => setRetraceStatus("idle"), 2000);
+                                  };
+                                  img.src = traceImageDataUrl;
+                                }
+                              }}
+                            >
+                              {retraceStatus === "done" ? "✓ Done" : "Re-trace"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-xs"
+                              onClick={() => {
+                                setTemplateName("");
+                                setTemplatePublic(false);
+                                setSaveTemplateOpen(true);
+                              }}
+                            >
+                              Save as Template
+                            </Button>
+                          </div>
+                          <Button
+                            onClick={() => {
+                              if (traceImageDataUrl) {
+                                setCanvasState(prev => ({
+                                  ...prev,
+                                  referenceImage: traceImageDataUrl,
+                                }));
+                              }
+                              setPhaseAndSave("shapeCanvas");
+                              setActiveTab("edit");
+                            }}
+                            className="w-full bg-primary text-primary-foreground font-semibold"
+                          >
+                            Continue to Edit →
+                          </Button>
+                        </>
+                      )}
+
+                      {/* Give feedback */}
                       <div className="text-center pt-1">
                         <a
                           href="mailto:feedback@wrender.com?subject=Tracer%20feedback"
