@@ -108,10 +108,14 @@ const StyleStep = ({ stylePrefs, onStylePrefsChange, canvasState, onContinue, on
         {/* Footer buttons */}
         <div className="p-4 border-t border-border flex items-center justify-between">
           <button onClick={onBack} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Back to Shape
+            ← Back to Draw
           </button>
-          <Button onClick={onContinue} className="bg-primary text-primary-foreground font-semibold px-6">
-            Continue to Render →
+          <Button onClick={onContinue} disabled={isRendering} className="bg-primary text-primary-foreground font-semibold px-6">
+            {isRendering ? (
+              <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Rendering…</>
+            ) : (
+              renderButtonLabel || "Continue to Render →"
+            )}
           </Button>
         </div>
       </div>
