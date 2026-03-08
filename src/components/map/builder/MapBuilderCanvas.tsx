@@ -264,7 +264,11 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             opacity: lineProps.opacity,
           });
         } else if (obj instanceof Line) {
-          obj.set({ stroke: lineProps.stroke });
+          if ((obj as any).data?.isMapStroke) {
+            obj.set({ stroke: lineProps.stroke, strokeWidth: lineStyle === "nautical" ? sw * 1.6 : sw });
+          } else {
+            obj.set({ stroke: lineProps.stroke });
+          }
         } else if (obj instanceof Rect || obj instanceof Circle) {
           if (!(obj as any).isRefImage) obj.set({ stroke: lineProps.stroke });
         }
