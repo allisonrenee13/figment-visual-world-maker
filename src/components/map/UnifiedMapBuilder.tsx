@@ -392,10 +392,19 @@ const UnifiedMapBuilder = ({ onConfirm, initialPhase: initialPhaseProp }: Unifie
       }
     } else if (tab === "add") {
       if (phase !== "add" && phase !== "renderReady" && phase !== "rendering" && phase !== "preview") {
+        // Hide reference image — it's an editing aid only
+        canvasRef.current?.setReferenceOpacity(0);
         setPhase("add");
       }
     }
   };
+
+  // Also hide reference image whenever phase becomes "add" or render phases
+  useEffect(() => {
+    if (phase === "add" || phase === "renderReady" || phase === "rendering" || phase === "preview") {
+      canvasRef.current?.setReferenceOpacity(0);
+    }
+  }, [phase]);
 
   // --- Determine what to show in center ---
   const isEntryOrUpload = phase === "entry" || phase === "upload";
