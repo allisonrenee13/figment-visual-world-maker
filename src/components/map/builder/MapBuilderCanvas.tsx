@@ -192,6 +192,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             canvas.add(line);
           }
           canvas.renderAll();
+          console.log("[path:created segments] total objects after split:", canvas.getObjects().length);
           saveState();
         });
         saveState();
