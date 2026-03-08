@@ -585,8 +585,8 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
           {showRightPanel && (
             <div className="w-[320px] border-l border-border flex flex-col bg-card shrink-0">
               {/* Edit banner when re-entering from view mode */}
-              {initialPhaseProp === "shapeCanvas" && (
-                <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-800 text-center">
+              {(initialPhaseProp === "shapeCanvas" || initialSVG) && (
+                <div className="px-4 py-2 bg-accent/50 border-b border-border text-xs text-accent-foreground text-center">
                   Editing — render again to update your saved map
                 </div>
               )}
