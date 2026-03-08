@@ -74,13 +74,6 @@ const MapPage = () => {
     setMovingPinId(pinId);
   };
 
-  const handleSaveTitle = (pinId: string) => {
-    if (editingTitleValue.trim()) {
-      updatePin(pinId, { title: editingTitleValue.trim() });
-    }
-    setEditingTitleId(null);
-  };
-
   if (showBuilder) {
     return (
       <div className="h-full flex flex-col">
