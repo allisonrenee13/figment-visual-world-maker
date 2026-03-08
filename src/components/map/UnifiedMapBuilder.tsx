@@ -18,7 +18,7 @@ import type { MapCanvasHandle } from "./builder/MapBuilderCanvas";
 import { postProcessSVG, exportSVG, exportPNG } from "./builder/svgPostProcess";
 import type { BuilderPath, MapTemplate, StylePreferences, CanvasState, TracedPath } from "./builder/types";
 import { defaultStylePreferences, lineStyleLabels, backgroundColors } from "./builder/types";
-import { saveTemplate } from "@/lib/templateLibrary";
+
 
 type Phase = "entry" | "upload" | "traceReview" | "shapeCanvas" | "add" | "style" | "renderReady" | "rendering" | "preview";
 type TabId = "trace" | "edit" | "add";
