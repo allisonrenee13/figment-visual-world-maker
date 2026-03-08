@@ -1034,6 +1034,25 @@ function traceOutlineImage(
     }
   }
 
+  // Detect thick black line maps (road maps, geographic maps)
+  let hasThickStrokes = false;
+  const darkPixelCount = Array.from(
+    { length: Math.floor(w * h / sampleStep) },
+    (_, i) => i * sampleStep
+  ).filter(i => {
+    const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
+    return r < 80 && g < 80 && b < 80;
+  }).length;
+  const darkRatio = darkPixelCount / (w * h / sampleStep);
+  if (darkRatio > 0.05 && darkRatio < 0.4) {
+    hasThickStrokes = true;
+  }
+
+  // For thick-stroke maps, use lower threshold to capture only very dark pixels
+  if (hasThickStrokes) {
+    threshold = 100;
+  }
+
   const ink = new Uint8Array(w * h);
   for (let i = 0; i < w * h; i++) {
     const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
