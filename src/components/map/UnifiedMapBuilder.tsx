@@ -663,9 +663,7 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
       gray[i] = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
     }
 
-    // Both outline and non-outline images use the same Sobel pipeline now,
-    // with targeted fixes for border artifacts and thick-stroke double edges.
-    console.log(`[tracer] ${w}x${h}, bright=${(brightCount/totalPixels*100).toFixed(1)}%, dark=${darkCount}, mode=sobel-unified`);
+    console.log(`[tracer] ${w}x${h}, mode=sobel-unified`);
 
     return traceSobelMode(gray, w, h, sensitivity);
   } catch (err) {
