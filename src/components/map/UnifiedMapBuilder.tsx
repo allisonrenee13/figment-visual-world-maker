@@ -3,6 +3,7 @@ import { useProject } from "@/context/ProjectContext";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import POTRACE from "potrace-js";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -153,8 +154,8 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
     toast({ title: "Template loaded", description: "Edit the shape to match your world." });
   };
 
-  const runTrace = useCallback((imageData: ImageData, w: number, h: number, sensitivity: number): TracedPath[] => {
-    return traceImageToSVGPaths(imageData, w, h, sensitivity);
+  const runTrace = useCallback((canvas: HTMLCanvasElement, w: number, h: number, sensitivity: number): TracedPath[] => {
+    return runPotraceOnCanvas(canvas, w, h, sensitivity);
   }, []);
 
   const handleAutoTrace = (imageDataUrl: string) => {
@@ -168,7 +169,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
       const ctx = traceCanvas.getContext("2d")!;
       ctx.drawImage(img, 0, 0, w, h);
       const imageData = ctx.getImageData(0, 0, w, h);
-      const paths = runTrace(imageData, w, h, 0.65);
+      const paths = runTrace(traceCanvas, w, h, 0.65);
 
       setTraceImageDataUrl(imageDataUrl);
       setTraceImageData({ data: imageData, w, h });
@@ -197,20 +198,30 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
     setTraceSensitivity(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      if (!traceImageData) return;
-      const { data, w, h } = traceImageData;
-      const paths = traceImageToSVGPaths(data, w, h, value);
-      if (paths.length > 0) {
-        setCanvasState((prev) => ({ ...prev, paths, nodeCount: paths.length * 10 }));
-      } else {
-        setCanvasState((prev) => ({
-          ...prev,
-          paths: [generateOutlinePath(w, h)],
-          nodeCount: 12,
-        }));
-      }
+      if (!traceImageData || !traceImageDataUrl) return;
+      const { w, h } = traceImageData;
+      // Rebuild canvas from the stored dataUrl for potrace
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        const paths = runPotraceOnCanvas(c, w, h, value);
+        if (paths.length > 0) {
+          setCanvasState((prev) => ({ ...prev, paths, nodeCount: paths.length * 10 }));
+        } else {
+          setCanvasState((prev) => ({
+            ...prev,
+            paths: [generateOutlinePath(w, h)],
+            nodeCount: 12,
+          }));
+        }
+      };
+      img.src = traceImageDataUrl;
     }, 500);
-  }, [traceImageData]);
+  }, [traceImageData, traceImageDataUrl]);
 
   const handleManualTrace = (image: string) => {
     setCanvasState({ ...defaultCanvas, referenceImage: image, referenceOpacity: 40 });
@@ -418,11 +429,21 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                       size="sm"
                       className="flex-1 text-xs"
                       onClick={() => {
-                        if (traceImageData) {
-                          const paths = runTrace(traceImageData.data, traceImageData.w, traceImageData.h, traceSensitivity);
-                          if (paths.length > 0) {
-                            setCanvasState((prev) => ({ ...prev, paths, nodeCount: paths.length * 10 }));
-                          }
+                        if (traceImageData && traceImageDataUrl) {
+                          const { w, h } = traceImageData;
+                          const img = new Image();
+                          img.onload = () => {
+                            const c = document.createElement("canvas");
+                            c.width = w;
+                            c.height = h;
+                            const ctx = c.getContext("2d")!;
+                            ctx.drawImage(img, 0, 0, w, h);
+                            const paths = runPotraceOnCanvas(c, w, h, traceSensitivity);
+                            if (paths.length > 0) {
+                              setCanvasState((prev) => ({ ...prev, paths, nodeCount: paths.length * 10 }));
+                            }
+                          };
+                          img.src = traceImageDataUrl;
                         }
                       }}
                     >
