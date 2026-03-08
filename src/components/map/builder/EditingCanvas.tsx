@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import CanvasToolbar from "./CanvasToolbar";
 import StylePreferencesPanel from "./StylePreferencesPanel";
 import MapBuilderCanvas, { type MapCanvasHandle } from "./MapBuilderCanvas";
