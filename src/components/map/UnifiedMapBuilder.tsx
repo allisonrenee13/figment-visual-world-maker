@@ -686,7 +686,7 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
   }
 }
 function traceOutlineMode(gray: Float32Array, w: number, h: number, sensitivity: number): TracedPath[] {
-  // 1. Binary threshold: brightness < 128 → ink
+  console.log("[tracer:outline] starting, sensitivity=", sensitivity);
   const ink = new Uint8Array(w * h);
   for (let i = 0; i < w * h; i++) {
     ink[i] = gray[i] < 128 ? 1 : 0;
