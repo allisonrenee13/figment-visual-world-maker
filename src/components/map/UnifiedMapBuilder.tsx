@@ -977,7 +977,7 @@ function traceOutlineImage(
   }
 
   const paths: TracedPath[] = [];
-  for (const comp of significant) {
+  for (const comp of filteredSignificant) {
     const boundary = getBoundary(comp);
     if (boundary.length < 4) continue;
     const ordered = orderPoints(boundary);
