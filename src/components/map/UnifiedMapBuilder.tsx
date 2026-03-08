@@ -4,10 +4,6 @@ import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import EntryScreen from "./builder/EntryScreen";
 import TemplatePicker from "./builder/TemplatePicker";
@@ -18,7 +14,7 @@ import type { MapCanvasHandle } from "./builder/MapBuilderCanvas";
 import { postProcessSVG, exportSVG, exportPNG } from "./builder/svgPostProcess";
 import type { BuilderPath, MapTemplate, StylePreferences, CanvasState, TracedPath } from "./builder/types";
 import { defaultStylePreferences, lineStyleLabels, backgroundColors } from "./builder/types";
-import { saveTemplate } from "@/lib/templateLibrary";
+
 
 type Phase = "entry" | "upload" | "traceReview" | "shapeCanvas" | "add" | "style" | "renderReady" | "rendering" | "preview";
 type TabId = "trace" | "edit" | "add";
@@ -96,10 +92,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   const [retraceStatus, setRetraceStatus] = useState<"idle" | "running" | "done">("idle");
   const [isTimedOut, setIsTimedOut] = useState(false);
 
-  // Save-as-template modal
-  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
-  const [templateName, setTemplateName] = useState("");
-  const [templatePublic, setTemplatePublic] = useState(false);
   const [showReference, setShowReference] = useState(false);
 
   const hasShape = canvasState.paths.length > 0 || selectedTemplate !== null;
@@ -332,39 +324,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
     }
   };
 
-  const handleSaveAsTemplate = () => {
-    if (!templateName.trim()) return;
-    const thumbCanvas = document.createElement("canvas");
-    thumbCanvas.width = 200;
-    thumbCanvas.height = 150;
-    const ctx = thumbCanvas.getContext("2d")!;
-    ctx.fillStyle = "#FAFAF7";
-    ctx.fillRect(0, 0, 200, 150);
-
-    const allPaths = canvasState.paths;
-    if (allPaths.length > 0) {
-      ctx.strokeStyle = "#1a1a1a";
-      ctx.lineWidth = 1;
-      ctx.lineJoin = "round";
-      ctx.lineCap = "round";
-      allPaths.forEach((p) => {
-        const path2d = new Path2D(p.d);
-        ctx.stroke(path2d);
-      });
-    }
-
-    const thumbnailDataUrl = thumbCanvas.toDataURL("image/png");
-    saveTemplate({
-      name: templateName.trim(),
-      svgPaths: allPaths,
-      thumbnailDataUrl,
-      isPublic: templatePublic,
-    });
-    setSaveTemplateOpen(false);
-    setTemplateName("");
-    setTemplatePublic(false);
-    toast({ title: "Template saved", description: `"${templateName.trim()}" saved to your library.` });
-  };
 
   // Trace review stats
   const pathCount = canvasState.paths.length;
@@ -792,18 +751,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                                 {retraceStatus === "done" ? "✓ Done" : "Re-trace"}
                               </Button>
                             )}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1 text-xs"
-                              onClick={() => {
-                                setTemplateName("");
-                                setTemplatePublic(false);
-                                setSaveTemplateOpen(true);
-                              }}
-                            >
-                              Save as Template
-                            </Button>
                           </div>
                           <Button
                             onClick={() => {
@@ -952,41 +899,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
         onSelect={handleTemplateSelect}
       />
 
-      {/* Save as Template Modal */}
-      <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
-        <DialogContent className="sm:max-w-[360px]">
-          <DialogHeader>
-            <DialogTitle className="font-serif">Save as Template</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="tpl-name" className="text-xs">Template name</Label>
-              <Input
-                id="tpl-name"
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                placeholder="My island template"
-                className="h-9"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="tpl-public" className="text-xs">Make public</Label>
-              <Switch
-                id="tpl-public"
-                checked={templatePublic}
-                onCheckedChange={setTemplatePublic}
-              />
-            </div>
-            <Button
-              onClick={handleSaveAsTemplate}
-              disabled={!templateName.trim()}
-              className="w-full bg-primary text-primary-foreground font-semibold"
-            >
-              Save Template
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
