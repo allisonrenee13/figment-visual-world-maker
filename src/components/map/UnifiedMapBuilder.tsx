@@ -653,6 +653,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
 
 // --- Improved Client-side image edge tracing ---
 function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensitivity = 0.65): TracedPath[] {
+  try {
   const { data } = imageData;
 
   // 1. Convert to grayscale
