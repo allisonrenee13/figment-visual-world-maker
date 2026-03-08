@@ -600,47 +600,43 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                         <p className="text-xs text-muted-foreground animate-pulse">Analysing your image...</p>
                       )}
 
-                      {/* STATE 2: Poor trace */}
+                      {/* STATE 2: Poor trace / Timed out */}
                       {retraceStatus !== "running" && isPoorTrace && (
-                        <>
-                          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
-                            <p className="text-xs font-medium text-amber-800">
-                              This map is too detailed to auto-trace.
+                        <div className="space-y-3">
+                          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                            <p className="text-xs font-medium text-amber-800 mb-1">
+                              {isTimedOut
+                                ? "This image is too complex to auto-trace."
+                                : "This map is too detailed to auto-trace."}
                             </p>
                             <p className="text-xs text-amber-700">
-                              Choose an option below to continue.
+                              {isTimedOut
+                                ? "Auto-trace works best with simple outlines and silhouettes. Detailed maps with icons, labels, and multiple colors can't be traced automatically yet."
+                                : "Choose an option below to continue."}
                             </p>
                           </div>
-
+                          <p className="text-xs text-muted-foreground">
+                            Try one of these instead:
+                          </p>
                           <div className="space-y-2">
                             <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full text-xs"
-                              onClick={() => handleEntrySelect("template")}
-                            >
-                              Browse Templates →
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full text-xs"
-                              onClick={() => handleEntrySelect("draw")}
-                            >
-                              Draw from scratch →
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full text-xs"
+                              className="w-full bg-primary text-primary-foreground font-semibold"
                               onClick={() => {
                                 if (traceImageDataUrl) handleManualTrace(traceImageDataUrl);
                               }}
                             >
-                              Trace manually →
+                              Draw over it manually →
+                            </Button>
+                            <Button variant="outline" className="w-full text-xs"
+                              onClick={() => handleEntrySelect("template")}>
+                              Browse Templates →
+                            </Button>
+                            <Button variant="outline" className="w-full text-xs"
+                              onClick={() => handleEntrySelect("draw")}>
+                              Start from scratch →
                             </Button>
                           </div>
-                        </>
+                        </div>
                       )}
 
                       {/* STATE 3: Normal (good trace) */}
@@ -714,8 +710,8 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                         </Button>
                       )}
 
-                      {/* STATE 2: Poor trace footer */}
-                      {retraceStatus !== "running" && isPoorTrace && (
+                      {/* STATE 2: Poor trace footer — only show "Continue anyway" if not timed out */}
+                      {retraceStatus !== "running" && isPoorTrace && !isTimedOut && (
                         <>
                           <Button
                             onClick={() => {
