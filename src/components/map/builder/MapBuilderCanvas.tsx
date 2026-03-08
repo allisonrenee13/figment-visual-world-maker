@@ -29,8 +29,6 @@ export interface MapCanvasHandle {
   redo: () => void;
   getJSON: () => string;
   loadJSON: (json: string) => void;
-  addReferenceImage: (url: string, opacity: number) => void;
-  setReferenceOpacity: (opacity: number) => void;
   getNodeCount: () => number;
   getObjectCount: () => number;
   setBrushWidth: (width: number) => void;
@@ -45,17 +43,18 @@ interface MapBuilderCanvasProps {
   height?: number;
   brushWidth?: number;
   eraserRadius?: number;
+  referenceImageUrl?: string | null;
+  referenceOpacity?: number;
 }
 
 const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
-  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height, brushWidth, eraserRadius }, ref) => {
+  ({ stylePrefs, activeTool, activeStamp, onStateChange, width, height, brushWidth, eraserRadius, referenceImageUrl, referenceOpacity: refOpacityProp }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasElRef = useRef<HTMLCanvasElement>(null);
     const fabricRef = useRef<Canvas | null>(null);
     const historyRef = useRef<string[]>([]);
     const historyIndexRef = useRef(-1);
     const isLoadingRef = useRef(false);
-    const refImageRef = useRef<FabricImage | null>(null);
     const sculptingRef = useRef(false);
     const eraserSizeRef = useRef(eraserRadius ?? 24);
 
@@ -236,6 +235,49 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       window.addEventListener("keydown", handler);
       return () => window.removeEventListener("keydown", handler);
     }, [doUndo, doRedo]);
+
+    // --- Reference Image HTML Overlay ---
+    useEffect(() => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      // Remove existing reference img if any
+      const existing = container.querySelector("#wrender-reference-img");
+      if (existing) existing.remove();
+
+      if (!referenceImageUrl || (refOpacityProp ?? 0) === 0) return;
+
+      const img = document.createElement("img");
+      img.id = "wrender-reference-img";
+      img.src = referenceImageUrl;
+      img.style.cssText = `
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        opacity: ${(refOpacityProp ?? 30) / 100};
+        pointer-events: none;
+        z-index: 0;
+      `;
+      container.style.position = "relative";
+      // Insert before the canvas element so it's behind
+      const canvasEl = canvasElRef.current;
+      if (canvasEl) {
+        // Make sure Fabric's canvas wrapper sits above the reference
+        const wrapper = canvasEl.parentElement;
+        if (wrapper && wrapper !== container) {
+          wrapper.style.position = "relative";
+          wrapper.style.zIndex = "1";
+        }
+      }
+      container.insertBefore(img, container.firstChild);
+
+      return () => {
+        const el = container.querySelector("#wrender-reference-img");
+        if (el) el.remove();
+      };
+    }, [referenceImageUrl, refOpacityProp]);
 
     // --- Style Changes ---
     useEffect(() => {
@@ -682,32 +724,6 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         await canvas.loadFromJSON(json);
         canvas.renderAll();
         isLoadingRef.current = false;
-      },
-      addReferenceImage: (url: string, opacity: number) => {
-        const canvas = fabricRef.current;
-        if (!canvas) return;
-        FabricImage.fromURL(url).then((img) => {
-          if (!img) return;
-          img.set({
-            opacity: opacity / 100, selectable: false, evented: false,
-            scaleX: canvasWidth / (img.width || canvasWidth),
-            scaleY: canvasHeight / (img.height || canvasHeight),
-            excludeFromExport: true,
-          });
-          canvas.add(img);
-          canvas.sendObjectToBack(img);
-          canvas.getObjects().forEach((obj) => {
-            if (obj.excludeFromExport && !(obj instanceof FabricImage)) canvas.sendObjectToBack(obj);
-          });
-          refImageRef.current = img;
-          canvas.renderAll();
-        });
-      },
-      setReferenceOpacity: (opacity: number) => {
-        if (refImageRef.current) {
-          refImageRef.current.set({ opacity: opacity / 100 });
-          fabricRef.current?.renderAll();
-        }
       },
       getNodeCount: () => {
         const canvas = fabricRef.current;

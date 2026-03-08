@@ -138,9 +138,7 @@ const EditingCanvas = ({
       });
     }
 
-    if (referenceImage) {
-      handle.addReferenceImage(referenceImage, refOpacity);
-    }
+    // Reference image is now handled via HTML overlay in MapBuilderCanvas
 
     if (canvasState.paths.length > 0 && !initialTemplate) {
       // Parse all path segments and compute bounding box
@@ -197,7 +195,6 @@ const EditingCanvas = ({
   useEffect(() => {
     if (canvasState.referenceOpacity !== refOpacity) {
       setRefOpacity(canvasState.referenceOpacity);
-      canvasHandle.current?.setReferenceOpacity(canvasState.referenceOpacity);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasState.referenceOpacity]);
@@ -205,7 +202,6 @@ const EditingCanvas = ({
   const handleRefOpacityChange = (value: number) => {
     setRefOpacity(value);
     onCanvasChange({ ...canvasState, referenceOpacity: value });
-    canvasHandle.current?.setReferenceOpacity(value);
   };
 
   const handleGuidanceDismiss = () => {
@@ -261,6 +257,8 @@ const EditingCanvas = ({
                 height={600}
                 brushWidth={activeTool === "pen" ? penWidthMap[brushWeight] : undefined}
                 eraserRadius={activeTool === "eraser" ? eraserSize : undefined}
+                referenceImageUrl={referenceImage}
+                referenceOpacity={canvasState.referenceOpacity}
               />
 
               {/* Empty canvas prompt */}
