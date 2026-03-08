@@ -359,27 +359,17 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
       }
     } else if (tab === "edit") {
       if (phase !== "shapeCanvas") {
-        // Restore reference image when returning to edit
-        if (canvasState.referenceImage) {
-          canvasRef.current?.setReferenceOpacity(canvasState.referenceOpacity);
-        }
         setPhase("shapeCanvas");
       }
     } else if (tab === "add") {
       if (phase !== "add" && phase !== "renderReady" && phase !== "rendering" && phase !== "preview") {
-        // Hide reference image — it's an editing aid only
-        canvasRef.current?.setReferenceOpacity(0);
         setPhase("add");
       }
     }
   };
 
-  // Also hide reference image whenever phase becomes "add" or render phases
-  useEffect(() => {
-    if (phase === "add" || phase === "renderReady" || phase === "rendering" || phase === "preview") {
-      canvasRef.current?.setReferenceOpacity(0);
-    }
-  }, [phase]);
+
+
 
   // --- Determine what to show in center ---
   const isEntryOrUpload = phase === "entry" || phase === "upload";
@@ -473,7 +463,7 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
               <div className="flex-1 relative">
                 <EditingCanvas
                   initialTemplate={selectedTemplate}
-                  referenceImage={canvasState.referenceImage}
+                  referenceImage={null}
                   canvasState={canvasState}
                   onCanvasChange={setCanvasState}
                   stylePrefs={stylePrefs}
