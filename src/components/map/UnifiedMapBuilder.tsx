@@ -94,6 +94,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   const [isCleanOutline, setIsCleanOutline] = useState(false);
   const [isPoorTrace, setIsPoorTrace] = useState(false);
   const [retraceStatus, setRetraceStatus] = useState<"idle" | "running" | "done">("idle");
+  const [isTimedOut, setIsTimedOut] = useState(false);
 
   // Save-as-template modal
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
@@ -197,11 +198,25 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
       setRetraceStatus("running");
       setIsPoorTrace(false);
       setIsCleanOutline(false);
+      setIsTimedOut(false);
       setPhase("traceReview");
 
       // Run expensive trace after browser has painted
       setTimeout(() => {
+        const traceTimeout = setTimeout(() => {
+          setRetraceStatus("idle");
+          setIsPoorTrace(true);
+          setIsTimedOut(true);
+          setCanvasState({
+            ...defaultCanvas,
+            paths: [],
+            nodeCount: 0,
+          });
+        }, 5000);
+
         const paths = runTrace(traceCanvas, w, h, 0.65);
+        clearTimeout(traceTimeout);
+
         const avgConfidence = paths.length > 0
           ? paths.reduce((sum, p) => sum + p.confidence, 0) / paths.length
           : 0;
