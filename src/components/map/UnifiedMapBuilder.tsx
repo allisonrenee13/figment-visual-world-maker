@@ -156,6 +156,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
 
   // --- Handlers ---
   const handleEntrySelect = (path: BuilderPath) => {
+    setIsPoorTrace(false);
     if (path === "template") {
       setTemplatePickerOpen(true);
     } else if (path === "upload") {
@@ -167,7 +168,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   };
 
   const handleTemplateSelect = (template: MapTemplate) => {
-    setSelectedTemplate(template);
+    setIsPoorTrace(false);
     setTemplatePickerOpen(false);
     setCanvasState({ ...defaultCanvas, paths: [{ d: template.svgPath, confidence: 1 }] });
     setPhase("shapeCanvas");
@@ -179,6 +180,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   }, []);
 
   const handleAutoTrace = (imageDataUrl: string) => {
+    setIsPoorTrace(false);
     const img = new Image();
     img.onload = () => {
       const traceCanvas = document.createElement("canvas");
@@ -701,13 +703,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                             variant="outline"
                             className="w-full text-xs"
                             onClick={() => {
-                              if (traceImageDataUrl) {
-                                setCanvasState(prev => ({
-                                  ...prev,
-                                  referenceImage: traceImageDataUrl,
-                                  referenceOpacity: 0,
-                                }));
-                              }
                               setPhaseAndSave("shapeCanvas");
                               setActiveTab("edit");
                             }}
@@ -722,7 +717,6 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                               setCanvasState(prev => ({
                                 ...prev,
                                 referenceImage: traceImageDataUrl,
-                                referenceOpacity: 0,
                               }));
                             }
                             setPhaseAndSave("shapeCanvas");
