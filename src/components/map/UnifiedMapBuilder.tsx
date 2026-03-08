@@ -662,7 +662,150 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
     gray[i] = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
   }
 
-  // 2. Apply 3 passes of 3x3 Gaussian blur
+  // STEP 1 — Detect image type
+  let brightCount = 0;
+  let darkCount = 0;
+  for (let i = 0; i < w * h; i++) {
+    if (gray[i] > 200) brightCount++;
+    if (gray[i] < 80) darkCount++;
+  }
+  const totalPixels = w * h;
+  const isOutlineMode = (brightCount / totalPixels > 0.6) && (darkCount > 0);
+
+  if (isOutlineMode) {
+    return traceOutlineMode(gray, w, h, sensitivity);
+  } else {
+    return traceSobelMode(gray, w, h, sensitivity);
+  }
+}
+
+// --- OUTLINE MODE: for clean black-on-white line drawings ---
+function traceOutlineMode(gray: Float32Array, w: number, h: number, sensitivity: number): TracedPath[] {
+  // 1. Binary threshold: brightness < 128 → ink
+  const ink = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    ink[i] = gray[i] < 128 ? 1 : 0;
+  }
+
+  // 2. Remove 4px border artifacts
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (x < 4 || x >= w - 4 || y < 4 || y >= h - 4) {
+        ink[y * w + x] = 0;
+      }
+    }
+  }
+
+  // 3. Moore neighborhood contour tracing
+  const visited = new Uint8Array(w * h);
+  const contours: Array<Array<{ x: number; y: number }>> = [];
+  // Min component size based on sensitivity
+  const minSize = Math.max(6, Math.round((1 - sensitivity) * 200));
+
+  // Moore neighborhood directions (8-connected, clockwise from right)
+  const mooreX = [1, 1, 0, -1, -1, -1, 0, 1];
+  const mooreY = [0, 1, 1, 1, 0, -1, -1, -1];
+
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const idx = y * w + x;
+      if (!ink[idx] || visited[idx]) continue;
+      // Check if this is a boundary pixel (has at least one non-ink neighbor)
+      let isBoundary = false;
+      for (let d = 0; d < 8; d++) {
+        const nx = x + mooreX[d], ny = y + mooreY[d];
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h || !ink[ny * w + nx]) {
+          isBoundary = true;
+          break;
+        }
+      }
+      if (!isBoundary) {
+        visited[idx] = 1;
+        continue;
+      }
+
+      // Trace contour using Moore neighborhood
+      const contour: Array<{ x: number; y: number }> = [];
+      const startX = x, startY = y;
+      let cx = x, cy = y;
+      // Find the direction we entered from (first non-ink neighbor going counterclockwise)
+      let backtrack = 0;
+      for (let d = 0; d < 8; d++) {
+        const nx = cx + mooreX[d], ny = cy + mooreY[d];
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h || !ink[ny * w + nx]) {
+          backtrack = d;
+          break;
+        }
+      }
+
+      let steps = 0;
+      const maxSteps = w * h;
+      do {
+        contour.push({ x: cx, y: cy });
+        visited[cy * w + cx] = 1;
+
+        // Search clockwise from backtrack direction
+        let found = false;
+        const searchStart = (backtrack + 5) % 8; // start from backtrack+5 (Moore's rule)
+        for (let i = 0; i < 8; i++) {
+          const d = (searchStart + i) % 8;
+          const nx = cx + mooreX[d], ny = cy + mooreY[d];
+          if (nx >= 0 && nx < w && ny >= 0 && ny < h && ink[ny * w + nx]) {
+            // Record the direction we came from for the next pixel
+            backtrack = (d + 4) % 8; // opposite direction
+            cx = nx;
+            cy = ny;
+            found = true;
+            break;
+          }
+        }
+        if (!found) break;
+        steps++;
+      } while ((cx !== startX || cy !== startY) && steps < maxSteps);
+
+      if (contour.length >= minSize) {
+        contours.push(contour);
+      }
+    }
+  }
+
+  // Sort by size, keep top 250
+  contours.sort((a, b) => b.length - a.length);
+  const kept = contours.slice(0, 250);
+
+  // 4. Douglas-Peucker with epsilon=2.5
+  const results: TracedPath[] = [];
+  for (const contour of kept) {
+    const simplified = douglasPeucker(contour, 2.5);
+    if (simplified.length < 2) continue;
+
+    let d = `M ${simplified[0].x} ${simplified[0].y}`;
+    for (let i = 1; i < simplified.length; i++) {
+      d += ` L ${simplified[i].x} ${simplified[i].y}`;
+    }
+    // Close contour if start ≈ end
+    const first = simplified[0], last = simplified[simplified.length - 1];
+    if (Math.abs(first.x - last.x) < 3 && Math.abs(first.y - last.y) < 3) {
+      d += " Z";
+    }
+
+    // 6. Filter out border-spanning paths (>85% of canvas width or height)
+    const xs = simplified.map(p => p.x);
+    const ys = simplified.map(p => p.y);
+    const bboxW = Math.max(...xs) - Math.min(...xs);
+    const bboxH = Math.max(...ys) - Math.min(...ys);
+    if (bboxW > w * 0.85 || bboxH > h * 0.85) continue;
+
+    // 5. confidence=1.0 for outline mode
+    results.push({ d, confidence: 1.0 });
+  }
+
+  return results;
+}
+
+// --- SOBEL MODE: for photos and complex maps (existing pipeline) ---
+function traceSobelMode(gray: Float32Array, w: number, h: number, sensitivity: number): TracedPath[] {
+  // Gaussian blur (3 passes)
   const kernel = [1/16, 2/16, 1/16, 2/16, 4/16, 2/16, 1/16, 2/16, 1/16];
   let src = gray;
   for (let pass = 0; pass < 3; pass++) {
@@ -682,7 +825,7 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
     src = dst;
   }
 
-  // 3. Sobel operator
+  // Sobel operator
   const magnitude = new Float32Array(w * h);
   let maxMag = 0;
   for (let y = 1; y < h - 1; y++) {
@@ -699,17 +842,15 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
     }
   }
 
-  // 4. Threshold
   if (maxMag === 0) return [];
   const threshold = (0.08 + (1 - sensitivity) * 0.35) * maxMag;
 
-  // Normalize magnitudes
   const normalized = new Float32Array(w * h);
   for (let i = 0; i < w * h; i++) {
     normalized[i] = magnitude[i] / maxMag;
   }
 
-  // 5. Find connected components via DFS
+  // Connected components via DFS
   const isEdge = new Uint8Array(w * h);
   for (let i = 0; i < w * h; i++) {
     isEdge[i] = magnitude[i] >= threshold ? 1 : 0;
@@ -723,7 +864,6 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
       const idx = y * w + x;
       if (!isEdge[idx] || visited[idx]) continue;
 
-      // DFS
       const stack = [idx];
       const points: Array<{ x: number; y: number }> = [];
       let totalMag = 0;
@@ -737,7 +877,6 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
         points.push({ x: cx, y: cy });
         totalMag += normalized[ci];
 
-        // 8-connected neighbors
         for (let dy = -1; dy <= 1; dy++) {
           for (let dx = -1; dx <= 1; dx++) {
             if (dx === 0 && dy === 0) continue;
@@ -757,15 +896,11 @@ function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensit
     }
   }
 
-  // Sort by size, keep top 250
   components.sort((a, b) => b.points.length - a.points.length);
   const kept = components.slice(0, 250);
 
-  // 6. Douglas-Peucker simplification + path building
   const results: TracedPath[] = [];
-
   for (const comp of kept) {
-    // Order points by a simple nearest-neighbor walk
     const ordered = orderPoints(comp.points);
     const simplified = douglasPeucker(ordered, 1.8);
     if (simplified.length < 2) continue;
