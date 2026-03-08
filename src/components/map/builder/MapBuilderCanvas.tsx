@@ -648,6 +648,12 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       },
       getObjectCount: () =>
         fabricRef.current?.getObjects().filter((o) => !o.excludeFromExport).length ?? 0,
+      setBrushWidth: (width: number) => {
+        const canvas = fabricRef.current;
+        if (canvas?.freeDrawingBrush) {
+          canvas.freeDrawingBrush.width = width;
+        }
+      },
     }), [doUndo, doRedo, saveState, colors.bg, colors.stroke, sw, canvasWidth, canvasHeight]);
 
     return (
