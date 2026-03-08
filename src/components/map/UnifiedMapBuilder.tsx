@@ -731,7 +731,7 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
                               variant="outline"
                               size="sm"
                               className="flex-1 text-xs"
-                              disabled={retraceStatus === "running"}
+                              
                               onClick={() => {
                                 if (traceImageData && traceImageDataUrl) {
                                   const { w, h } = traceImageData;
