@@ -744,7 +744,7 @@ function traceOutlineMode(gray: Float32Array, w: number, h: number, sensitivity:
       }
 
       let steps = 0;
-      const maxSteps = w * h;
+      const maxSteps = Math.min(w * h, 50000); // Cap to prevent browser hangs
       do {
         contour.push({ x: cx, y: cy });
         visited[cy * w + cx] = 1;
