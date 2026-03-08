@@ -140,12 +140,12 @@ const MapPage = () => {
       <div className="flex-1 flex items-center justify-center p-6 bg-muted/20">
         <div
           ref={mapContainerRef}
-          className="relative w-full max-w-[600px]"
-          style={{ aspectRatio: "1 / 1", cursor: isPlacing ? "crosshair" : "default" }}
+          className="relative w-full max-w-[600px] border border-border rounded-lg overflow-hidden shadow-md"
+          style={{ cursor: isPlacing ? "crosshair" : "default" }}
           onClick={handleMapClick}
         >
           <div
-            className="w-full h-full border border-border rounded-lg overflow-hidden shadow-md bg-background"
+            className="w-full"
             dangerouslySetInnerHTML={{ __html: displaySVG }}
           />
           {currentProject.pins?.map((pin) => (
