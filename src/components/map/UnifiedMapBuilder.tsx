@@ -900,19 +900,15 @@ function traceOutlineImage(
   }
 
   // Colored background detection via color variance + corner brightness
-  let rSum = 0, gSum = 0, bSum = 0, count = 0;
-  for (let i = 0; i < w * h; i += 20) {
-    rSum += data[i * 4]; gSum += data[i * 4 + 1]; bSum += data[i * 4 + 2];
-    count++;
-  }
-  const rMean = rSum / count, gMean = gSum / count, bMean = bSum / count;
   let colorVar = 0;
+  let cvCount = 0;
   for (let i = 0; i < w * h; i += 20) {
-    colorVar += Math.abs(data[i * 4] - rMean) +
-                Math.abs(data[i * 4 + 1] - gMean) +
-                Math.abs(data[i * 4 + 2] - bMean);
+    const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
+    const maxC = Math.max(r, g, b), minC = Math.min(r, g, b);
+    colorVar += maxC - minC;
+    cvCount++;
   }
-  colorVar /= count;
+  colorVar /= cvCount;
 
   // Corner sampling for average brightness
   const corners = [
@@ -924,7 +920,7 @@ function traceOutlineImage(
   }
   const avgCornerBrightness = cornerBrightnessSum / corners.length;
 
-  const isColoredBackground = avgCornerBrightness < 230 && colorVar > 40;
+  const isColoredBackground = avgCornerBrightness < 220 && colorVar > 30;
 
   // For colored backgrounds, use edge detection instead of brightness thresholding
   if (isColoredBackground) {
