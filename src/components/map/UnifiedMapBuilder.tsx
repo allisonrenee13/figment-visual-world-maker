@@ -92,6 +92,8 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   const [traceImageData, setTraceImageData] = useState<{ data: ImageData; w: number; h: number } | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
+  const [isCleanOutline, setIsCleanOutline] = useState(false);
+  const [retraceStatus, setRetraceStatus] = useState<"idle" | "running" | "done">("idle");
 
   // Save-as-template modal
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
