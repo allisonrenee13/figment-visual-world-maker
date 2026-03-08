@@ -654,33 +654,37 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
 // --- Improved Client-side image edge tracing ---
 function traceImageToSVGPaths(imageData: ImageData, w: number, h: number, sensitivity = 0.65): TracedPath[] {
   try {
-  const { data } = imageData;
+    const { data } = imageData;
 
-  // 1. Convert to grayscale
-  const gray = new Float32Array(w * h);
-  for (let i = 0; i < w * h; i++) {
-    const idx = i * 4;
-    gray[i] = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-  }
+    // 1. Convert to grayscale
+    const gray = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      const idx = i * 4;
+      gray[i] = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+    }
 
-  // STEP 1 — Detect image type
-  let brightCount = 0;
-  let darkCount = 0;
-  for (let i = 0; i < w * h; i++) {
-    if (gray[i] > 200) brightCount++;
-    if (gray[i] < 80) darkCount++;
-  }
-  const totalPixels = w * h;
-  const isOutlineMode = (brightCount / totalPixels > 0.6) && (darkCount > 0);
+    // STEP 1 — Detect image type
+    let brightCount = 0;
+    let darkCount = 0;
+    for (let i = 0; i < w * h; i++) {
+      if (gray[i] > 200) brightCount++;
+      if (gray[i] < 80) darkCount++;
+    }
+    const totalPixels = w * h;
+    const isOutlineMode = (brightCount / totalPixels > 0.6) && (darkCount > 0);
 
-  if (isOutlineMode) {
-    return traceOutlineMode(gray, w, h, sensitivity);
-  } else {
-    return traceSobelMode(gray, w, h, sensitivity);
+    console.log(`[tracer] ${w}x${h}, bright=${(brightCount/totalPixels*100).toFixed(1)}%, dark=${darkCount}, mode=${isOutlineMode ? 'outline' : 'sobel'}`);
+
+    if (isOutlineMode) {
+      return traceOutlineMode(gray, w, h, sensitivity);
+    } else {
+      return traceSobelMode(gray, w, h, sensitivity);
+    }
+  } catch (err) {
+    console.error("[tracer] crashed:", err);
+    return [];
   }
 }
-
-// --- OUTLINE MODE: for clean black-on-white line drawings ---
 function traceOutlineMode(gray: Float32Array, w: number, h: number, sensitivity: number): TracedPath[] {
   // 1. Binary threshold: brightness < 128 → ink
   const ink = new Uint8Array(w * h);
