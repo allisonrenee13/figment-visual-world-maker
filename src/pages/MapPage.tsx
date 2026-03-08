@@ -90,10 +90,10 @@ const MapPage = () => {
     );
   }
 
-  const displaySVG = savedSVG!.replace(
-    /<svg([^>]*)>/,
-    '<svg$1 style="width:100%;height:100%;display:block;">'
-  );
+  const displaySVG = savedSVG!
+    .replace(/<svg([^>]*?)width="[^"]*"/, '<svg$1width="100%"')
+    .replace(/height="[^"]*"/, 'height="auto"')
+    .replace(/<svg/, '<svg style="display:block;width:100%;height:auto;"');
 
   const isPlacing = addingPin || !!movingPinId;
 
