@@ -52,9 +52,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasElRef = useRef<HTMLCanvasElement>(null);
     const fabricRef = useRef<Canvas | null>(null);
-    const historyRef = useRef<string[]>([]);
-    const historyIndexRef = useRef(-1);
-    const isLoadingRef = useRef(false);
+    const history = useRef<string[]>([]);
+    const historyIndex = useRef(-1);
+    const isBusy = useRef(false);
     const refImageRef = useRef<FabricImage | null>(null);
     const sculptingRef = useRef(false);
     const eraserSizeRef = useRef(eraserRadius ?? 24);
@@ -71,38 +71,46 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
 
     // --- History ---
     const saveState = useCallback(() => {
+      if (isBusy.current) return;
       const canvas = fabricRef.current;
-      if (!canvas || isLoadingRef.current) return;
-      const json = JSON.stringify(canvas.toJSON());
-      historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
-      historyRef.current.push(json);
-      historyIndexRef.current = historyRef.current.length - 1;
+      if (!canvas) return;
+      const snap = JSON.stringify(canvas.toJSON());
+      if (snap === history.current[historyIndex.current]) return;
+      history.current = history.current.slice(0, historyIndex.current + 1);
+      history.current.push(snap);
+      if (history.current.length > 50) history.current.shift();
+      historyIndex.current = history.current.length - 1;
       onStateChange?.();
     }, [onStateChange]);
 
-    const doUndo = useCallback(() => {
+    const restoreState = useCallback((snap: string) => {
       const canvas = fabricRef.current;
-      if (!canvas || historyIndexRef.current <= 0) return;
-      isLoadingRef.current = true;
-      historyIndexRef.current--;
-      canvas.loadFromJSON(historyRef.current[historyIndexRef.current]).then(() => {
+      if (!canvas) return;
+      isBusy.current = true;
+      canvas.loadFromJSON(JSON.parse(snap)).then(() => {
+        canvas.getObjects().forEach(obj => {
+          if ((obj as any).data?.isMapStroke) {
+            obj.selectable = false;
+            obj.evented = true;
+          }
+        });
         canvas.renderAll();
-        isLoadingRef.current = false;
+        isBusy.current = false;
         onStateChange?.();
       });
     }, [onStateChange]);
 
+    const doUndo = useCallback(() => {
+      if (historyIndex.current <= 0) return;
+      historyIndex.current--;
+      restoreState(history.current[historyIndex.current]);
+    }, [restoreState]);
+
     const doRedo = useCallback(() => {
-      const canvas = fabricRef.current;
-      if (!canvas || historyIndexRef.current >= historyRef.current.length - 1) return;
-      isLoadingRef.current = true;
-      historyIndexRef.current++;
-      canvas.loadFromJSON(historyRef.current[historyIndexRef.current]).then(() => {
-        canvas.renderAll();
-        isLoadingRef.current = false;
-        onStateChange?.();
-      });
-    }, [onStateChange]);
+      if (historyIndex.current >= history.current.length - 1) return;
+      historyIndex.current++;
+      restoreState(history.current[historyIndex.current]);
+    }, [restoreState]);
 
     // --- Init Canvas With Correct Dimensions ---
     useEffect(() => {
@@ -608,7 +616,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       loadSVG: async (svgString: string) => {
         const canvas = fabricRef.current;
         if (!canvas) return;
-        isLoadingRef.current = true;
+        isBusy.current = true;
         try {
           const result = await loadSVGFromString(svgString);
           canvas.getObjects().filter((o) => !o.excludeFromExport).forEach((o) => canvas.remove(o));
@@ -659,7 +667,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         } catch (err) {
           console.error("loadSVG failed:", err);
         } finally {
-          isLoadingRef.current = false;
+          isBusy.current = false;
         }
       },
       clear: () => {
@@ -678,10 +686,10 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       loadJSON: async (json: string) => {
         const canvas = fabricRef.current;
         if (!canvas) return;
-        isLoadingRef.current = true;
+        isBusy.current = true;
         await canvas.loadFromJSON(json);
         canvas.renderAll();
-        isLoadingRef.current = false;
+        isBusy.current = false;
       },
       addReferenceImage: (url: string, opacity: number) => {
         const canvas = fabricRef.current;
