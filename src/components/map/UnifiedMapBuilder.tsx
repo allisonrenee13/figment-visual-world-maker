@@ -148,6 +148,17 @@ const UnifiedMapBuilder = ({ onConfirm }: UnifiedMapBuilderProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-confirm after render completes
+  useEffect(() => {
+    if (pendingConfirm.current && renderedSVG) {
+      pendingConfirm.current = false;
+      saveCanvasState();
+      confirmMap();
+      onConfirm?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderedSVG]);
+
   // --- Handlers ---
   const handleEntrySelect = (path: BuilderPath) => {
     setIsPoorTrace(false);
