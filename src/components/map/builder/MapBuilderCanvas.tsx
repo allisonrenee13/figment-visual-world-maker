@@ -89,9 +89,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       const canvas = fabricRef.current;
       if (!canvas) return;
       isBusy.current = true;
-      canvas.loadFromJSON(JSON.parse(snap), () => {
+      canvas.loadFromJSON(JSON.parse(snap)).then(() => {
         canvas.getObjects().forEach(obj => {
-          if (obj.data?.isMapStroke) {
+          if ((obj as any).data?.isMapStroke) {
             obj.selectable = false;
             obj.evented = true;
           }
