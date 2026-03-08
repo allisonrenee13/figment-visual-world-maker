@@ -805,6 +805,18 @@ function traceSobelMode(gray: Float32Array, w: number, h: number, sensitivity: n
     const simplified = douglasPeucker(ordered, 1.8);
     if (simplified.length < 2) continue;
 
+    // FIX 1b — Filter straight-line artifacts: discard paths where
+    // bounding box perimeter / point count > 4.0
+    const xs = simplified.map(p => p.x);
+    const ys = simplified.map(p => p.y);
+    const bboxW = Math.max(...xs) - Math.min(...xs);
+    const bboxH = Math.max(...ys) - Math.min(...ys);
+    const bboxPerimeter = 2 * (bboxW + bboxH);
+    if (simplified.length > 0 && bboxPerimeter / simplified.length > 4.0) continue;
+
+    // Also discard border-spanning paths (>85% of canvas)
+    if (bboxW > w * 0.85 || bboxH > h * 0.85) continue;
+
     let d = `M ${simplified[0].x} ${simplified[0].y}`;
     for (let i = 1; i < simplified.length; i++) {
       d += ` L ${simplified[i].x} ${simplified[i].y}`;
