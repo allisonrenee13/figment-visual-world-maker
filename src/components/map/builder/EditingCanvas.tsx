@@ -229,6 +229,8 @@ const EditingCanvas = ({
                 onStateChange={handleStateChange}
                 width={800}
                 height={600}
+                brushWidth={activeTool === "pen" ? penSize : undefined}
+                eraserRadius={activeTool === "eraser" ? eraserSize : undefined}
               />
 
               {/* Empty canvas prompt */}
