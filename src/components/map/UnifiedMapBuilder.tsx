@@ -965,7 +965,9 @@ function traceOutlineImage(
   }
 
   // 4. Min component size based on sensitivity
-  const minSize = Math.round((1 - sensitivity) * 150) + 8;
+  const minSize = isColoredBackground
+    ? Math.round((1 - sensitivity) * 300) + 20
+    : Math.round((1 - sensitivity) * 150) + 8;
   const significant = components
     .filter(c => c.length >= minSize)
     .sort((a, b) => b.length - a.length)
@@ -983,9 +985,11 @@ function traceOutlineImage(
 
     // Filter 1: too small to be a map region (likely a letter)
     const imageArea = w * h;
-    if (comp.length < imageArea * 0.002) {
+    const areaThreshold = isColoredBackground ? 0.003 : 0.002;
+    const fillThreshold = isColoredBackground ? 0.5 : 0.35;
+    if (comp.length < imageArea * areaThreshold) {
       const fillRatio = comp.length / (bboxArea || 1);
-      if (fillRatio < 0.35) return false;
+      if (fillRatio < fillThreshold) return false;
     }
 
     // Filter 2: aspect ratio close to square + small = likely a single letter
