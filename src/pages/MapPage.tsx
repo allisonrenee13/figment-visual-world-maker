@@ -457,13 +457,20 @@ const MapPage = () => {
   };
 
   const openPinDrawer = () => {
-    setShowStylePanel(false);
     setShowPinDrawer(true);
   };
 
-  const openStylePanel = () => {
-    setShowPinDrawer(false);
-    setShowStylePanel((v) => !v);
+  const toggleDrawMode = () => {
+    if (drawMode) {
+      // Closing draw mode — switch to pan
+      setDrawMode(false);
+      setActiveTool(null);
+    } else {
+      // Opening draw mode — default to select
+      if (!canvasStarted) setCanvasStarted(true);
+      setDrawMode(true);
+      setActiveTool("select");
+    }
   };
 
   const handleAddLocationFromDrawer = () => {
