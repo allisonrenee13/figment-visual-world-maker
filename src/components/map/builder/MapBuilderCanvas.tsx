@@ -16,6 +16,8 @@ import {
   Line,
   FabricImage,
   loadSVGFromString,
+  Group,
+  util,
 } from "fabric";
 import type { StylePreferences, ShapeTool, FeatureStamp } from "./types";
 import { strokeWeightValues, backgroundColors } from "./types";
