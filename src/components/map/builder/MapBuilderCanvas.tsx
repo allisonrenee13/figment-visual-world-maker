@@ -873,6 +873,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       setEraserSize: (size: number) => {
         eraserSizeRef.current = size;
       },
+      refreshTool: () => {
+        setToolRefreshCounter(c => c + 1);
+      },
       applyStrokeWeightToAll: (weight: number) => {
         const canvas = fabricRef.current;
         if (!canvas) return;
