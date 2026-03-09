@@ -384,9 +384,6 @@ const MapPage = () => {
                   Save to Wrender
                 </Button>
               </div>
-            </div>
-              </div>
-            </div>
           )}
         </div>
 
