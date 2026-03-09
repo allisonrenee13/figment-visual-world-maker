@@ -849,6 +849,15 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           canvas.freeDrawingBrush.width = width;
         }
       },
+      setPenWidth: (width: number) => {
+        const canvas = fabricRef.current;
+        if (canvas?.freeDrawingBrush) {
+          canvas.freeDrawingBrush.width = width;
+        }
+      },
+      setEraserSize: (size: number) => {
+        eraserSizeRef.current = size;
+      },
       applyStrokeWeightToAll: (weight: number) => {
         const canvas = fabricRef.current;
         if (!canvas) return;

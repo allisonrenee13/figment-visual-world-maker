@@ -64,52 +64,6 @@ const StylePreferencesPanel = ({ prefs, onChange, forceExpanded, hideLineStyle }
     const colors = backgroundColors[prefs.background];
     return (
       <div className="space-y-4">
-        {/* Line Style — 2x2 grid (hidden when hideLineStyle) */}
-        {!hideLineStyle && (
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-foreground/80">Line style</label>
-          <div className="grid grid-cols-2 gap-2">
-            {lineStyles.map((ls) => {
-              const active = prefs.lineStyle === ls.id;
-              const attrs = getSwatchAttrs(ls.id, colors.stroke);
-              return (
-                <button
-                  key={ls.id}
-                  onClick={() => update("lineStyle", ls.id)}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
-                    active
-                      ? "border-secondary bg-secondary/5"
-                      : "border-border hover:border-muted-foreground/30"
-                  }`}
-                >
-                  <svg viewBox="0 0 60 60" className="w-10 h-10">
-                    {ls.id === "hand-drawn" && (
-                      <defs>
-                        <filter id="wobble">
-                          <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="2" result="turb" />
-                          <feDisplacementMap in="SourceGraphic" in2="turb" scale={2} />
-                        </filter>
-                      </defs>
-                    )}
-                    <rect width="60" height="60" fill={colors.bg} rx="4" />
-                    <path
-                      d={swatchPath}
-                      fill="none"
-                      stroke={attrs.stroke}
-                      strokeWidth={attrs.strokeWidth}
-                      strokeDasharray={attrs.strokeDasharray}
-                      strokeLinejoin="round"
-                      opacity={attrs.opacity}
-                      filter={attrs.filter}
-                    />
-                  </svg>
-                  <span className="text-[10px] text-muted-foreground leading-tight">{lineStyleLabels[ls.id]}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        )}
 
         {/* Stroke Weight — 3 buttons full width */}
         <div className="space-y-1.5">

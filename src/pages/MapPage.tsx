@@ -615,6 +615,26 @@ const MapPage = () => {
             >
               <Pencil className="h-4 w-4" />
             </button>
+            {activeTool === "pen" && (
+              <div className="flex flex-col gap-0.5 w-9">
+                {([["F", 1], ["M", 2], ["B", 3.5]] as const).map(([label, weight]) => (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      setPenWeight(weight);
+                      canvasRef.current?.setPenWidth(weight);
+                    }}
+                    className={`w-9 h-7 rounded text-[10px] font-semibold transition-colors ${
+                      penWeight === weight
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
             <button
               onClick={() => setActiveTool("eraser")}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
@@ -624,6 +644,24 @@ const MapPage = () => {
             >
               <Eraser className="h-4 w-4" />
             </button>
+            {activeTool === "eraser" && (
+              <div className="flex flex-col items-center gap-1 py-1">
+                <input
+                  type="range"
+                  min={5}
+                  max={40}
+                  value={eraserSize}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setEraserSize(v);
+                    canvasRef.current?.setEraserSize(v);
+                  }}
+                  className="h-16 cursor-pointer"
+                  style={{ writingMode: "vertical-lr", direction: "rtl" }}
+                />
+                <span className="text-[9px] text-muted-foreground">{eraserSize}</span>
+              </div>
+            )}
             <div className="w-6 border-t border-border my-1" />
             <button
               onClick={() => setShowTemplatePicker(true)}
