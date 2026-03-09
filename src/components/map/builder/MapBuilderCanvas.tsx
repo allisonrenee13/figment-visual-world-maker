@@ -929,8 +929,10 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             (canvas.height! * 0.5) / group.height!
           );
           group.scale(scale);
-          group.center();
-
+          group.set({
+            left: (canvas.width! - group.width! * scale) / 2,
+            top: (canvas.height! - group.height! * scale) / 2,
+          });
           canvas.add(group);
           canvas.setActiveObject(group);
           canvas.renderAll();
