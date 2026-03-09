@@ -414,13 +414,18 @@ const MapPage = () => {
           return;
         }
 
+        const isFirstTrace = !canvasStarted;
         setCanvasStarted(true);
         setTraceMethod("auto");
         setRefOpacity(0);
         setDrawMode(true);
         setActiveTool("select");
         setTimeout(() => {
-          canvasRef.current?.loadSVG(svgString);
+          if (isFirstTrace) {
+            canvasRef.current?.loadSVG(svgString);
+          } else {
+            canvasRef.current?.addSVGAsLayer(svgString);
+          }
           setTimeout(() => {
             canvasRef.current?.addReferenceImage(traceImageUrl!, 0);
           }, 200);
@@ -443,11 +448,16 @@ const MapPage = () => {
 
   const handleTemplateSelect = (template: MapTemplate) => {
     setShowTemplatePicker(false);
+    const isFirst = !canvasStarted;
     setCanvasStarted(true);
     setTimeout(() => {
       if (canvasRef.current) {
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${template.viewBox}"><path d="${template.svgPath}" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
-        canvasRef.current.loadSVG(svg);
+        if (isFirst) {
+          canvasRef.current.loadSVG(svg);
+        } else {
+          canvasRef.current.addSVGAsLayer(svg);
+        }
       }
     }, 300);
   };

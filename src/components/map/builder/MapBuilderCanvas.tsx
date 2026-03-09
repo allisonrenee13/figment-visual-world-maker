@@ -26,6 +26,7 @@ export interface MapCanvasHandle {
   getSVG: () => string;
   getPNG: () => string;
   loadSVG: (svg: string) => void;
+  addSVGAsLayer: (svg: string) => void;
   
   clear: () => void;
   undo: () => void;
@@ -900,6 +901,45 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       },
       setEraserSize: (size: number) => {
         eraserSizeRef.current = size;
+      },
+      addSVGAsLayer: async (svgString: string) => {
+        const canvas = fabricRef.current;
+        if (!canvas) return;
+        try {
+          const result = await loadSVGFromString(svgString);
+          const objects = result.objects.filter((obj): obj is FabricObject => obj !== null);
+          if (objects.length === 0) return;
+
+          const group = util.groupSVGElements(objects) as Group;
+
+          group.set({
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
+            lockUniScaling: false,
+            cornerStyle: "circle" as any,
+            cornerColor: "#C9A84C",
+            cornerSize: 10,
+            transparentCorners: false,
+          });
+
+          const scale = Math.min(
+            (canvas.width! * 0.5) / group.width!,
+            (canvas.height! * 0.5) / group.height!
+          );
+          group.scale(scale);
+          group.set({
+            left: (canvas.width! - group.width! * scale) / 2,
+            top: (canvas.height! - group.height! * scale) / 2,
+          });
+          canvas.add(group);
+          canvas.setActiveObject(group);
+          canvas.renderAll();
+          saveState();
+        } catch (err) {
+          console.error("addSVGAsLayer failed:", err);
+        }
       },
       refreshTool: () => {
         setToolRefreshCounter(c => c + 1);
