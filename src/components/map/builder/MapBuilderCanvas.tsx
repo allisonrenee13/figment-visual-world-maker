@@ -779,8 +779,21 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           });
 
           canvas.discardActiveObject();
-          canvas.renderAll();
-          saveState();
+          canvas.requestRenderAll();
+
+          // Center all objects on canvas
+          const allObjs = canvas.getObjects().filter((o: any) => !o.excludeFromExport);
+          if (allObjs.length > 0) {
+            const { ActiveSelection } = await import("fabric");
+            const sel = new ActiveSelection(allObjs, { canvas });
+            canvas.setActiveObject(sel);
+            sel.center();
+            canvas.discardActiveObject();
+            canvas.requestRenderAll();
+            saveState();
+          } else {
+            saveState();
+          }
         } catch (err) {
           console.error("addTraceAsObject failed:", err);
         }
