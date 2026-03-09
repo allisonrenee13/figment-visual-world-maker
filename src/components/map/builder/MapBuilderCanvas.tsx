@@ -741,7 +741,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             (canvas.height! * 0.8) / tempGroup.height!
           );
           tempGroup.set({ scaleX: scale, scaleY: scale });
-          tempGroup.center();
+          // Center the group on canvas
+          tempGroup.set({
+            left: canvas.width! / 2,
+            top: canvas.height! / 2,
+            originX: 'center',
+            originY: 'center',
+          });
 
           // Get the final transform matrix before ungrouping
           const groupMatrix = tempGroup.calcTransformMatrix();
