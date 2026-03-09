@@ -226,41 +226,43 @@ const MapPage = () => {
       {/* Main area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left toolbar — always visible */}
-        <div className="hidden md:flex flex-col w-12 border-r border-border bg-muted/30 items-center py-3 gap-1.5">
-          <button
-            onClick={() => { if (!canvasStarted) handleStartDraw(); else toggleTool("pen"); }}
-            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-              activeTool === "pen" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-            title="Pen"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => { if (!canvasStarted) { setCanvasStarted(true); setActiveTool("eraser"); } else toggleTool("eraser"); }}
-            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-              activeTool === "eraser" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-            title="Eraser"
-          >
-            <Eraser className="h-4 w-4" />
-          </button>
-          <div className="w-6 border-t border-border my-1" />
-          <button
-            onClick={() => setShowTemplatePicker(true)}
-            className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            title="Templates"
-          >
-            <Layout className="h-4 w-4" />
-          </button>
-          <button
-            onClick={handleStartTrace}
-            className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-sm"
-            title="Trace from image"
-          >
-            📷
-          </button>
-        </div>
+        {viewMode === "edit" && (
+          <div className="hidden md:flex flex-col w-12 border-r border-border bg-muted/30 items-center py-3 gap-1.5">
+            <button
+              onClick={() => { if (!canvasStarted) handleStartDraw(); else toggleTool("pen"); }}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                activeTool === "pen" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+              title="Pen"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => { if (!canvasStarted) { setCanvasStarted(true); setActiveTool("eraser"); } else toggleTool("eraser"); }}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                activeTool === "eraser" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+              title="Eraser"
+            >
+              <Eraser className="h-4 w-4" />
+            </button>
+            <div className="w-6 border-t border-border my-1" />
+            <button
+              onClick={() => setShowTemplatePicker(true)}
+              className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              title="Templates"
+            >
+              <Layout className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleStartTrace}
+              className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-sm"
+              title="Trace from image"
+            >
+              📷
+            </button>
+          </div>
+        )}
 
         {/* Center canvas */}
         <div className="flex-1 flex flex-col items-center justify-center bg-muted/20 overflow-auto relative">
@@ -305,7 +307,38 @@ const MapPage = () => {
                 </div>
               </div>
             </div>
+          ) : viewMode === "saved" && savedSVG ? (
+            /* Saved map view */
+            <div className="flex-1 flex flex-col items-center justify-center p-3 md:p-6 w-full">
+              <div
+                ref={mapContainerRef}
+                className="relative w-full mx-auto border border-border rounded-xl overflow-hidden shadow-md bg-background"
+                style={{ maxWidth: "900px", cursor: isPlacing ? "crosshair" : "default" }}
+                onClick={isPlacing ? handleMapClick : undefined}
+              >
+                <div dangerouslySetInnerHTML={{ __html: savedSVG }} className="w-full" />
+                {showPinLayer && currentProject.pins?.map((pin) => (
+                  <div
+                    key={pin.id}
+                    style={{
+                      position: "absolute",
+                      left: `${pin.x}%`,
+                      top: `${pin.y}%`,
+                      transform: "translate(-50%, -50%)",
+                      zIndex: 10,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <div className="w-3 h-3 rounded-full bg-destructive border-2 border-background shadow-sm" />
+                    <span className="hidden md:block absolute top-4 left-1/2 -translate-x-1/2 text-[10px] font-medium whitespace-nowrap drop-shadow-sm">
+                      {pin.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
+            /* Edit mode canvas */
             <div className="flex-1 flex flex-col items-center justify-center p-3 md:p-6 w-full">
               <div
                 ref={mapContainerRef}
@@ -350,6 +383,8 @@ const MapPage = () => {
                 <Button className="w-full h-11" onClick={handleSave}>
                   Save to Wrender
                 </Button>
+              </div>
+            </div>
               </div>
             </div>
           )}
