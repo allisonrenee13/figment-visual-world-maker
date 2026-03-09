@@ -282,6 +282,7 @@ const MapPage = () => {
   const [traceModalOpen, setTraceModalOpen] = useState(false);
   const [traceImageUrl, setTraceImageUrl] = useState<string | null>(null);
   const [traceMode, setTraceMode] = useState<"choose" | "uploading" | "preview">("choose");
+  const [tracing, setTracing] = useState(false);
   const [refOpacity, setRefOpacity] = useState(30);
 
   const canvasRef = useRef<MapCanvasHandle>(null);
