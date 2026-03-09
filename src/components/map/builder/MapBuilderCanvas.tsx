@@ -398,7 +398,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               obj.evented = true;
               obj.hasControls = true;
               obj.hasBorders = true;
-              obj.lockUniScaling = false;
+              (obj as any).lockUniScaling = false;
               obj.lockScalingX = false;
               obj.lockScalingY = false;
               obj.setCoords();
