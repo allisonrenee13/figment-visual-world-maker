@@ -929,7 +929,7 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
                         className={`w-full ${placingPin ? "border-primary text-primary" : ""}`}
                         onClick={() => { setMovingPinId(null); setPlacingPin(true); }}
                       >
-                        {placingPin ? "Click on the map to place pin..." : "Place a Pin"}
+                        {placingPin ? "Click on the map to place location..." : "Add Location"}
                       </Button>
 
                       <div className="space-y-3 pt-2 border-t border-border">

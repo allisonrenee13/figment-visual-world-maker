@@ -106,8 +106,25 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   }, [updateCurrentProject, logActivity]);
 
   const addPin = useCallback((pin: Omit<Pin, "id">) => {
-    const id = genId();
-    updateCurrentProject((p) => ({ ...p, pins: [...p.pins, { ...pin, id }] }));
+    const pinId = genId();
+    const locId = genId();
+    updateCurrentProject((p) => ({
+      ...p,
+      pins: [...p.pins, { ...pin, id: pinId }],
+      locations: [
+        ...p.locations,
+        {
+          id: locId,
+          name: pin.title,
+          description: pin.note || "",
+          type: "Landmark",
+          firstAppears: pin.chapter,
+          eventCount: 0,
+          photo: null,
+          status: "pinned" as const,
+        },
+      ],
+    }));
     const tierLabel = pin.tier === "minor" ? " (minor)" : "";
     logActivity(`Added pin: ${pin.title}${tierLabel} — Ch. ${pin.chapter}`);
     toast({ title: "Pin added", description: pin.title });
