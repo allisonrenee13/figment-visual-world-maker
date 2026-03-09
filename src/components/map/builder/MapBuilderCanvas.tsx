@@ -908,11 +908,12 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         try {
           const result = await loadSVGFromString(svgString);
           const objects = result.objects.filter((obj): obj is FabricObject => obj !== null);
-          if (objects.length === 0) return;
+          if (objects.length === 0) {
+            console.warn("[addSVGAsLayer] No objects parsed from SVG");
+            return;
+          }
 
-          const group = util.groupSVGElements(objects) as Group;
-
-          group.set({
+          const group = new Group(objects, {
             selectable: true,
             evented: true,
             hasControls: true,
@@ -922,20 +923,26 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             cornerColor: "#C9A84C",
             cornerSize: 10,
             transparentCorners: false,
+            fill: "transparent",
+            subTargetCheck: false,
           });
 
+          const gw = group.width || 100;
+          const gh = group.height || 100;
           const scale = Math.min(
-            (canvas.width! * 0.5) / group.width!,
-            (canvas.height! * 0.5) / group.height!
+            (canvas.width! * 0.5) / gw,
+            (canvas.height! * 0.5) / gh
           );
           group.scale(scale);
           group.set({
-            left: (canvas.width! - group.width! * scale) / 2,
-            top: (canvas.height! - group.height! * scale) / 2,
+            left: (canvas.width! - gw * scale) / 2,
+            top: (canvas.height! - gh * scale) / 2,
           });
+
           canvas.add(group);
           canvas.setActiveObject(group);
           canvas.renderAll();
+          console.log("[addSVGAsLayer] Added group with", objects.length, "objects, scale:", scale.toFixed(2));
           saveState();
         } catch (err) {
           console.error("addSVGAsLayer failed:", err);
