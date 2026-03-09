@@ -415,6 +415,8 @@ const MapPage = () => {
         setCanvasStarted(true);
         setTraceMethod("auto");
         setRefOpacity(0);
+        setDrawMode(true);
+        setActiveTool("select");
         setTimeout(() => {
           canvasRef.current?.addTraceAsObject(svgString);
           setTimeout(() => {
