@@ -103,6 +103,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             obj.evented = true;
           }
         });
+        // Re-apply current drawing mode
+        if (canvas.isDrawingMode) {
+          canvas.isDrawingMode = false;
+          canvas.isDrawingMode = true;
+        }
+        canvas.selection = false;
+        canvas.discardActiveObject();
         canvas.renderAll();
         isBusy.current = false;
         onStateChange?.();
