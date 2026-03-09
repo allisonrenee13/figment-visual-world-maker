@@ -3,7 +3,7 @@ import { useProject } from "@/context/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Pencil, Eraser, MapPin, Eye, EyeOff, Trash2, X, LayoutTemplate, Scan, Loader2, Upload, MousePointer2 } from "lucide-react";
+import { Pencil, Eraser, MapPin, Eye, EyeOff, Trash2, X, LayoutTemplate, Scan, Loader2, Upload, MousePointer2, Undo2, Redo2 } from "lucide-react";
 import { toast } from "sonner";
 import MapBuilderCanvas, { type MapCanvasHandle } from "@/components/map/builder/MapBuilderCanvas";
 import TemplatePicker from "@/components/map/builder/TemplatePicker";
@@ -662,6 +662,21 @@ const MapPage = () => {
                 <span className="text-[9px] text-muted-foreground">{eraserSize}</span>
               </div>
             )}
+            <div className="w-6 border-t border-border my-1" />
+            <button
+              onClick={() => canvasRef.current?.undo()}
+              className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              title="Undo"
+            >
+              <Undo2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => canvasRef.current?.redo()}
+              className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              title="Redo"
+            >
+              <Redo2 className="h-4 w-4" />
+            </button>
             <div className="w-6 border-t border-border my-1" />
             <button
               onClick={() => setShowTemplatePicker(true)}
