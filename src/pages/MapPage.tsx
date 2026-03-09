@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useProject } from "@/context/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -289,6 +289,16 @@ const MapPage = () => {
   const canvasRef = useRef<MapCanvasHandle>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const traceInputRef = useRef<HTMLInputElement>(null);
+
+  const svgUrl = useMemo(() => {
+    if (!savedSVG) return null;
+    const blob = new Blob([savedSVG], { type: "image/svg+xml" });
+    return URL.createObjectURL(blob);
+  }, [savedSVG]);
+
+  useEffect(() => {
+    return () => { if (svgUrl) URL.revokeObjectURL(svgUrl); };
+  }, [svgUrl]);
 
   const hasMap = savedSVG !== null;
   const showCanvas = hasMap || canvasStarted;
@@ -745,7 +755,7 @@ const MapPage = () => {
               {/* Save button */}
               <div className="mt-4 w-full" style={{ maxWidth: "900px" }}>
                 <Button className="w-full h-11" onClick={handleSave}>
-                  Save to Wrender
+                  Save Map
                 </Button>
               </div>
             </div>
@@ -765,7 +775,19 @@ const MapPage = () => {
                 style={{ maxWidth: "900px", cursor: isPlacing ? "crosshair" : "default" }}
                 onClick={isPlacing ? handleMapClick : undefined}
               >
-                <div dangerouslySetInnerHTML={{ __html: savedSVG }} className="w-full" />
+                {svgUrl && (
+                  <img
+                    src={svgUrl}
+                    alt={currentProject.title}
+                    className="w-full h-auto rounded-xl border border-border shadow-md"
+                    style={{
+                      maxWidth: "900px",
+                      objectFit: "contain",
+                      display: "block",
+                      margin: "0 auto",
+                    }}
+                  />
+                )}
                 {showPinLayer && currentProject.pins?.map((pin) => (
                   <div
                     key={pin.id}
