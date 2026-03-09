@@ -133,6 +133,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           width: actualWidth,
           height: actualHeight,
           selection: false,
+          selectionColor: "rgba(99, 102, 241, 0.05)",
+          selectionBorderColor: "rgba(99, 102, 241, 0.4)",
+          selectionLineWidth: 1,
         });
 
         fabricRef.current = canvas;
