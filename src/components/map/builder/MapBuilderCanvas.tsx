@@ -387,7 +387,26 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           break;
         }
 
-        case "pan": {
+        case "select": {
+          canvas.selection = true;
+          canvas.defaultCursor = "default";
+          canvas.getObjects().forEach((obj) => {
+            if (!obj.excludeFromExport && !(obj instanceof FabricImage)) {
+              obj.selectable = true;
+              obj.evented = true;
+              obj.hasControls = true;
+              obj.hasBorders = true;
+              obj.cornerStyle = "circle";
+              obj.cornerColor = "#C9A84C";
+              obj.cornerSize = 8;
+              obj.transparentCorners = false;
+            }
+          });
+          canvas.on("mouse:up", () => saveState());
+          canvas.renderAll();
+          break;
+        }
+
           canvas.defaultCursor = "grab";
           let isPanning = false;
           let lastPos = { x: 0, y: 0 };
