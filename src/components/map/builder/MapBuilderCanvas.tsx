@@ -732,40 +732,32 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         try {
           const result = await loadSVGFromString(svgString);
           const objects = result.objects.filter((obj): obj is FabricObject => obj !== null);
-          if (objects.length === 0) return;
+          if (objects.length === 0) {
+            console.log("[addTraceAsObject] no objects found");
+            return;
+          }
+          console.log("[addTraceAsObject] objects:", objects.length);
 
-          // Temporary group just for scaling/centering
-          const tempGroup = new Group([...objects]);
+          // Use groupSVGElements just for bounds calculation
+          const temp = util.groupSVGElements(objects, result.options);
           const scale = Math.min(
-            (canvas.width! * 0.8) / tempGroup.width!,
-            (canvas.height! * 0.8) / tempGroup.height!
+            (canvas.width! * 0.8) / (temp.width! * (temp.scaleX || 1)),
+            (canvas.height! * 0.8) / (temp.height! * (temp.scaleY || 1))
           );
-          tempGroup.set({ scaleX: scale, scaleY: scale });
-          // Center the group on canvas
-          tempGroup.set({
-            left: canvas.width! / 2,
-            top: canvas.height! / 2,
-            originX: 'center',
-            originY: 'center',
-          });
+          const cx = canvas.width! / 2;
+          const cy = canvas.height! / 2;
+          const tw = temp.width! * (temp.scaleX || 1) * scale;
+          const th = temp.height! * (temp.scaleY || 1) * scale;
 
-          // Get the final transform matrix before ungrouping
-          const groupMatrix = tempGroup.calcTransformMatrix();
-          const items = tempGroup.getObjects();
-
-          items.forEach(obj => {
-            const objMatrix = obj.calcTransformMatrix();
-            const finalMatrix = util.multiplyTransformMatrices(
-              groupMatrix, objMatrix
-            );
-            const decomposed = util.qrDecompose(finalMatrix);
-
+          // Add each object individually with correct position
+          objects.forEach(obj => {
+            const ox = (obj.left || 0) - (temp.left || 0);
+            const oy = (obj.top || 0) - (temp.top || 0);
             obj.set({
-              left: decomposed.translateX,
-              top: decomposed.translateY,
-              scaleX: decomposed.scaleX,
-              scaleY: decomposed.scaleY,
-              angle: decomposed.angle,
+              left: cx - tw / 2 + ox * scale,
+              top: cy - th / 2 + oy * scale,
+              scaleX: (obj.scaleX || 1) * scale,
+              scaleY: (obj.scaleY || 1) * scale,
               selectable: true,
               evented: true,
               hasControls: true,
@@ -780,8 +772,6 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             canvas.add(obj);
           });
 
-          console.log("[addTraceAsObject] adding objects:", items.length);
-          canvas.remove(tempGroup);
           canvas.discardActiveObject();
           canvas.renderAll();
           saveState();
