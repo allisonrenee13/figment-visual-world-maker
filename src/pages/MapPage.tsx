@@ -3,27 +3,36 @@ import { useProject } from "@/context/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Pencil, MapPin, SlidersHorizontal, Eye, EyeOff, Trash2, X } from "lucide-react";
+import { Pencil, Eraser, MapPin, SlidersHorizontal, Eye, EyeOff, Trash2, X, Layout } from "lucide-react";
+import MapBuilderCanvas, { type MapCanvasHandle } from "@/components/map/builder/MapBuilderCanvas";
+import TemplatePicker from "@/components/map/builder/TemplatePicker";
+import { defaultStylePreferences } from "@/components/map/builder/types";
+import type { ShapeTool, StylePreferences, MapTemplate } from "@/components/map/builder/types";
 
-type ActiveTool = "draw" | "pin" | null;
+type CanvasTool = "pen" | "eraser" | null;
 
 const MapPage = () => {
   const { currentProject, addPin, removePin, updatePin } = useProject();
 
   const [savedSVG, setSavedSVG] = useState<string | null>(null);
-  const [activeTool, setActiveTool] = useState<ActiveTool>(null);
+  const [canvasStarted, setCanvasStarted] = useState(false);
+  const [activeTool, setActiveTool] = useState<CanvasTool>(null);
   const [showPinDrawer, setShowPinDrawer] = useState(false);
   const [showStylePanel, setShowStylePanel] = useState(false);
   const [showPinLayer, setShowPinLayer] = useState(true);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [stylePrefs] = useState<StylePreferences>(defaultStylePreferences);
 
   const [placingPin, setPlacingPin] = useState(false);
   const [movingPinId, setMovingPinId] = useState<string | null>(null);
   const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
   const [pinName, setPinName] = useState("");
 
+  const canvasRef = useRef<MapCanvasHandle>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
   const hasMap = savedSVG !== null;
+  const showCanvas = hasMap || canvasStarted;
 
   if (!currentProject) {
     return (
@@ -69,17 +78,41 @@ const MapPage = () => {
     setPinName("");
   };
 
-  const toggleTool = (tool: ActiveTool) => {
+  const toggleTool = (tool: CanvasTool) => {
     setActiveTool((prev) => (prev === tool ? null : tool));
   };
+
+  const handleStartDraw = () => {
+    setCanvasStarted(true);
+    setActiveTool("pen");
+  };
+
+  const handleStartTrace = () => {
+    // Placeholder — will open trace flow later
+    setCanvasStarted(true);
+  };
+
+  const handleTemplateSelect = (template: MapTemplate) => {
+    setShowTemplatePicker(false);
+    setCanvasStarted(true);
+    // Load template SVG into canvas after it mounts
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${template.viewBox}"><path d="${template.svgPath}" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+        canvasRef.current.loadSVG(svg);
+      }
+    }, 300);
+  };
+
+  const fabricTool: ShapeTool = activeTool === "pen" ? "pen" : activeTool === "eraser" ? "eraser" : "pan";
+
+  const isPlacing = placingPin || !!movingPinId;
 
   const displaySVG = savedSVG
     ? savedSVG
         .replace(/\swidth="[\d.]+(?:px)?"/, ' width="100%"')
         .replace(/\sheight="[\d.]+(?:px)?"/, ' height="auto"')
     : null;
-
-  const isPlacing = placingPin || !!movingPinId;
 
   return (
     <div className="h-full flex flex-col">
@@ -89,39 +122,47 @@ const MapPage = () => {
           {currentProject.title}
         </h2>
         <div className="flex items-center gap-1.5">
-          <Button
-            size="sm"
-            variant={activeTool === "draw" ? "default" : "outline"}
-            onClick={() => toggleTool("draw")}
-            className="text-xs h-8"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Draw</span>
-          </Button>
-          <Button
-            size="sm"
-            variant={activeTool === "pin" ? "default" : "outline"}
-            onClick={() => {
-              toggleTool("pin");
-              if (activeTool !== "pin") {
-                setPlacingPin(true);
-              } else {
-                setPlacingPin(false);
-              }
-            }}
-            className="text-xs h-8"
-          >
-            <MapPin className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Pin</span>
-          </Button>
-          <Button
-            size="sm"
-            variant={showStylePanel ? "default" : "outline"}
-            onClick={() => setShowStylePanel((v) => !v)}
-            className="text-xs h-8"
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-          </Button>
+          {showCanvas && (
+            <>
+              <Button
+                size="sm"
+                variant={activeTool === "pen" ? "default" : "outline"}
+                onClick={() => toggleTool("pen")}
+                className="text-xs h-8"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">Draw</span>
+              </Button>
+              <Button
+                size="sm"
+                variant={activeTool === "eraser" ? "default" : "outline"}
+                onClick={() => toggleTool("eraser")}
+                className="text-xs h-8"
+              >
+                <Eraser className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">Eraser</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setPlacingPin(true);
+                }}
+                className="text-xs h-8"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">Pin</span>
+              </Button>
+              <Button
+                size="sm"
+                variant={showStylePanel ? "default" : "outline"}
+                onClick={() => setShowStylePanel((v) => !v)}
+                className="text-xs h-8"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+              </Button>
+            </>
+          )}
           {hasMap && (
             <Button
               size="sm"
@@ -132,7 +173,7 @@ const MapPage = () => {
               {showPinLayer ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
             </Button>
           )}
-          {hasMap && (
+          {showCanvas && (
             <Button
               size="sm"
               variant="outline"
@@ -152,7 +193,7 @@ const MapPage = () => {
             {movingPinId ? "Click on the map to move the pin" : "Click on the map to place location…"}
           </span>
           <button
-            onClick={() => { setPlacingPin(false); setMovingPinId(null); setActiveTool(null); }}
+            onClick={() => { setPlacingPin(false); setMovingPinId(null); }}
             className="ml-3 text-xs text-muted-foreground hover:text-foreground underline"
           >
             Cancel
@@ -162,47 +203,108 @@ const MapPage = () => {
 
       {/* Main area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left toolbar placeholder */}
-        <div className="hidden md:flex flex-col w-12 border-r border-border bg-muted/30 items-center py-3 gap-2">
-          {/* Tools will go here */}
-        </div>
+        {/* Left toolbar */}
+        {showCanvas && (
+          <div className="hidden md:flex flex-col w-12 border-r border-border bg-muted/30 items-center py-3 gap-1.5">
+            <button
+              onClick={() => toggleTool("pen")}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                activeTool === "pen" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+              title="Pen"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => toggleTool("eraser")}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                activeTool === "eraser" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+              title="Eraser"
+            >
+              <Eraser className="h-4 w-4" />
+            </button>
+
+            <div className="w-6 border-t border-border my-1" />
+
+            <button
+              onClick={() => setShowTemplatePicker(true)}
+              className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              title="Templates"
+            >
+              <Layout className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleStartTrace}
+              className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-sm"
+              title="Trace from image"
+            >
+              📷
+            </button>
+          </div>
+        )}
 
         {/* Center canvas */}
         <div className="flex-1 flex flex-col items-center justify-center p-3 md:p-6 bg-muted/20 overflow-auto">
-          {!hasMap ? (
+          {!showCanvas ? (
             /* First-time creation UI */
-            <div className="flex flex-col items-center justify-center gap-6 text-center max-w-sm">
+            <div className="flex flex-col items-center justify-center gap-6 text-center max-w-md">
               <div>
                 <h3 className="font-serif text-lg font-semibold mb-1">Create your map</h3>
                 <p className="text-xs text-muted-foreground">
                   Choose how you'd like to start building your world.
                 </p>
               </div>
-              <div className="flex flex-col gap-2 w-full">
-                <Button variant="outline" className="w-full justify-start gap-2 h-11">
-                  📷 Trace from an image
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2 h-11">
-                  🗺️ Start from a template
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2 h-11">
-                  ✏️ Draw freehand
-                </Button>
+              <div className="grid grid-cols-3 gap-3 w-full">
+                <button
+                  onClick={handleStartTrace}
+                  className="flex flex-col items-center gap-2 border border-border rounded-lg p-4 bg-card hover:border-primary/30 hover:shadow-sm transition-all"
+                >
+                  <span className="text-2xl">📷</span>
+                  <span className="text-sm font-medium">Trace a map</span>
+                  <span className="text-[10px] text-muted-foreground">Upload &amp; trace</span>
+                </button>
+                <button
+                  onClick={() => setShowTemplatePicker(true)}
+                  className="flex flex-col items-center gap-2 border border-border rounded-lg p-4 bg-card hover:border-primary/30 hover:shadow-sm transition-all"
+                >
+                  <span className="text-2xl">🗺</span>
+                  <span className="text-sm font-medium">Use a template</span>
+                  <span className="text-[10px] text-muted-foreground">Pick a shape</span>
+                </button>
+                <button
+                  onClick={handleStartDraw}
+                  className="flex flex-col items-center gap-2 border border-border rounded-lg p-4 bg-card hover:border-primary/30 hover:shadow-sm transition-all"
+                >
+                  <span className="text-2xl">✏️</span>
+                  <span className="text-sm font-medium">Draw freehand</span>
+                  <span className="text-[10px] text-muted-foreground">Blank canvas</span>
+                </button>
               </div>
             </div>
           ) : (
-            /* Map canvas with pin overlay */
             <>
               <div
                 ref={mapContainerRef}
                 className="relative w-full mx-auto border border-border rounded-xl overflow-hidden shadow-md"
-                style={{ maxWidth: "900px", lineHeight: 0, cursor: isPlacing ? "crosshair" : "default" }}
-                onClick={handleMapClick}
+                style={{ maxWidth: "900px", cursor: isPlacing ? "crosshair" : "default" }}
+                onClick={isPlacing ? handleMapClick : undefined}
               >
-                <div
-                  style={{ display: "block", width: "100%" }}
-                  dangerouslySetInnerHTML={{ __html: displaySVG! }}
+                {/* Fabric canvas */}
+                <MapBuilderCanvas
+                  ref={canvasRef}
+                  stylePrefs={stylePrefs}
+                  activeTool={fabricTool}
+                  activeStamp={null}
+                  placingPin={placingPin && !movingPinId}
+                  onPinPlaced={(x, y) => {
+                    setPendingPin({ x, y });
+                    setPlacingPin(false);
+                    setPinName("");
+                  }}
                 />
+
+                {/* Pin overlay */}
                 {showPinLayer && currentProject.pins?.map((pin) => (
                   <div
                     key={pin.id}
@@ -225,7 +327,16 @@ const MapPage = () => {
 
               {/* Save button */}
               <div className="mt-4">
-                <Button size="lg" className="px-8">
+                <Button
+                  size="lg"
+                  className="px-8"
+                  onClick={() => {
+                    if (canvasRef.current) {
+                      const svg = canvasRef.current.getSVG();
+                      setSavedSVG(svg);
+                    }
+                  }}
+                >
                   Save &amp; Render
                 </Button>
               </div>
@@ -246,6 +357,13 @@ const MapPage = () => {
           </div>
         )}
       </div>
+
+      {/* Template Picker */}
+      <TemplatePicker
+        open={showTemplatePicker}
+        onClose={() => setShowTemplatePicker(false)}
+        onSelect={handleTemplateSelect}
+      />
 
       {/* Pin naming dialog */}
       <Dialog open={!!pendingPin} onOpenChange={(open) => { if (!open) setPendingPin(null); }}>
