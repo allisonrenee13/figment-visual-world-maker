@@ -735,7 +735,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           if (objects.length === 0) return;
 
           // Temporary group just for scaling/centering
-          const tempGroup = new fabric.Group([...objects]);
+          const tempGroup = new Group([...objects]);
           const scale = Math.min(
             (canvas.width! * 0.8) / tempGroup.width!,
             (canvas.height! * 0.8) / tempGroup.height!
@@ -749,10 +749,10 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
 
           items.forEach(obj => {
             const objMatrix = obj.calcTransformMatrix();
-            const finalMatrix = fabric.util.multiplyTransformMatrices(
+            const finalMatrix = util.multiplyTransformMatrices(
               groupMatrix, objMatrix
             );
-            const decomposed = fabric.util.qrDecompose(finalMatrix);
+            const decomposed = util.qrDecompose(finalMatrix);
 
             obj.set({
               left: decomposed.translateX,
