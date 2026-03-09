@@ -489,10 +489,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               obj.evented = true;
               obj.hasBorders = true;
               obj.hasControls = true;
-              obj.cornerStyle = "circle";
-              obj.cornerColor = "#C9A84C";
+              obj.borderColor = "#6366f1";
+              obj.borderScaleFactor = 1;
+              obj.cornerColor = "#6366f1";
+              obj.cornerStrokeColor = "#ffffff";
               obj.cornerSize = 8;
               obj.transparentCorners = false;
+              obj.selectionBackgroundColor = "transparent";
             }
           });
           canvas.on("mouse:up", () => saveState());
