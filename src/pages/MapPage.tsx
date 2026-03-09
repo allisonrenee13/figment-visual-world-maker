@@ -3,7 +3,7 @@ import { useProject } from "@/context/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Pencil, Eraser, MapPin, SlidersHorizontal, Eye, EyeOff, Trash2, X, LayoutTemplate, Scan, Loader2, Upload } from "lucide-react";
+import { Pencil, Eraser, MapPin, SlidersHorizontal, Eye, EyeOff, Trash2, X, LayoutTemplate, Scan, Loader2, Upload, MousePointer2 } from "lucide-react";
 import { toast } from "sonner";
 import MapBuilderCanvas, { type MapCanvasHandle } from "@/components/map/builder/MapBuilderCanvas";
 import TemplatePicker from "@/components/map/builder/TemplatePicker";
@@ -11,7 +11,7 @@ import StylePreferencesPanel from "@/components/map/builder/StylePreferencesPane
 import { defaultStylePreferences } from "@/components/map/builder/types";
 import type { ShapeTool, StylePreferences, MapTemplate, TracedPath } from "@/components/map/builder/types";
 
-type CanvasTool = "pen" | "eraser" | null;
+type CanvasTool = "pen" | "eraser" | "select" | null;
 
 // Custom Trace icon - T with wavy top
 const TraceIcon = ({ className }: { className?: string }) => (
@@ -415,7 +415,7 @@ const MapPage = () => {
         setTraceMethod("auto");
         setRefOpacity(0);
         setTimeout(() => {
-          canvasRef.current?.loadSVG(svgString);
+          canvasRef.current?.addTraceAsObject(svgString);
           setTimeout(() => {
             canvasRef.current?.addReferenceImage(traceImageUrl!, 0);
           }, 200);
@@ -471,7 +471,7 @@ const MapPage = () => {
     setPlacingPin(true);
   };
 
-  const fabricTool: ShapeTool = activeTool === "pen" ? "pen" : activeTool === "eraser" ? "eraser" : "pan";
+  const fabricTool: ShapeTool = activeTool === "pen" ? "pen" : activeTool === "eraser" ? "eraser" : activeTool === "select" ? "select" : "pan";
   const isPlacing = placingPin || !!movingPinId;
 
   return (
@@ -621,6 +621,15 @@ const MapPage = () => {
         {/* Left toolbar — always visible in edit mode */}
         {viewMode === "edit" && (
           <div className="hidden md:flex flex-col w-12 border-r border-border bg-muted/30 items-center py-3 gap-1.5">
+            <button
+              onClick={() => { if (!canvasStarted) { setCanvasStarted(true); } setActiveTool("select"); }}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                activeTool === "select" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+              title="Select / Move"
+            >
+              <MousePointer2 className="h-4 w-4" />
+            </button>
             <button
               onClick={() => { if (!canvasStarted) handleStartDraw(); else toggleTool("pen"); }}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${

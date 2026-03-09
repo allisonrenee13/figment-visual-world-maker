@@ -15,6 +15,7 @@ import {
   Circle,
   Line,
   FabricImage,
+  Group,
   loadSVGFromString,
 } from "fabric";
 import type { StylePreferences, ShapeTool, FeatureStamp } from "./types";
@@ -24,6 +25,7 @@ export interface MapCanvasHandle {
   getSVG: () => string;
   getPNG: () => string;
   loadSVG: (svg: string) => void;
+  addTraceAsObject: (svg: string) => void;
   clear: () => void;
   undo: () => void;
   redo: () => void;
@@ -385,6 +387,26 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           break;
         }
 
+        case "select": {
+          canvas.selection = true;
+          canvas.defaultCursor = "default";
+          canvas.getObjects().forEach((obj) => {
+            if (!obj.excludeFromExport && !(obj instanceof FabricImage)) {
+              obj.selectable = true;
+              obj.evented = true;
+              obj.hasControls = true;
+              obj.hasBorders = true;
+              obj.cornerStyle = "circle";
+              obj.cornerColor = "#C9A84C";
+              obj.cornerSize = 8;
+              obj.transparentCorners = false;
+            }
+          });
+          canvas.on("mouse:up", () => saveState());
+          canvas.renderAll();
+          break;
+        }
+
         case "pan": {
           canvas.defaultCursor = "grab";
           let isPanning = false;
@@ -702,6 +724,31 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           console.error("loadSVG failed:", err);
         } finally {
           isBusy.current = false;
+        }
+      },
+      addTraceAsObject: async (svgString: string) => {
+        const canvas = fabricRef.current;
+        if (!canvas) return;
+        try {
+          const result = await loadSVGFromString(svgString);
+          const objects = result.objects.filter((obj): obj is FabricObject => obj !== null);
+          if (objects.length === 0) return;
+          const group = new Group(objects, {
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
+            cornerStyle: "circle",
+            cornerColor: "#C9A84C",
+            cornerSize: 8,
+            transparentCorners: false,
+          });
+          canvas.add(group);
+          canvas.setActiveObject(group);
+          canvas.renderAll();
+          saveState();
+        } catch (err) {
+          console.error("addTraceAsObject failed:", err);
         }
       },
       clear: () => {
