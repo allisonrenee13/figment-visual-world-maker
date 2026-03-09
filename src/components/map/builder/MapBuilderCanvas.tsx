@@ -780,7 +780,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             canvas.add(obj);
           });
 
-          tempGroup.destroy();
+          tempGroup.removeAll();
           canvas.discardActiveObject();
           canvas.renderAll();
           saveState();
