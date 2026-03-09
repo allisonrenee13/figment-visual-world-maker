@@ -284,6 +284,7 @@ const MapPage = () => {
   const [traceMode, setTraceMode] = useState<"choose" | "uploading" | "preview">("choose");
   const [tracing, setTracing] = useState(false);
   const [refOpacity, setRefOpacity] = useState(30);
+  const [traceMethod, setTraceMethod] = useState<"auto" | "manual" | null>(null);
 
   const canvasRef = useRef<MapCanvasHandle>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -388,10 +389,10 @@ const MapPage = () => {
         setTraceModalOpen(false);
 
         if (paths.length === 0) {
-          // Fall back to manual mode
           toast("Auto-trace couldn't detect a clear outline — reference image loaded for manual tracing");
           setCanvasStarted(true);
           setActiveTool("pen");
+          setTraceMethod("manual");
           setTimeout(() => {
             canvasRef.current?.addReferenceImage(traceImageUrl!, 30);
           }, 300);
@@ -403,6 +404,7 @@ const MapPage = () => {
           toast("Auto-trace couldn't detect a clear outline — reference image loaded for manual tracing");
           setCanvasStarted(true);
           setActiveTool("pen");
+          setTraceMethod("manual");
           setTimeout(() => {
             canvasRef.current?.addReferenceImage(traceImageUrl!, 30);
           }, 300);
@@ -410,6 +412,7 @@ const MapPage = () => {
         }
 
         setCanvasStarted(true);
+        setTraceMethod("auto");
         setTimeout(() => {
           canvasRef.current?.loadSVG(svgString);
         }, 300);
@@ -423,6 +426,7 @@ const MapPage = () => {
     setTraceModalOpen(false);
     setCanvasStarted(true);
     setActiveTool("pen");
+    setTraceMethod("manual");
     setTimeout(() => {
       canvasRef.current?.addReferenceImage(traceImageUrl, 30);
     }, 300);
@@ -549,27 +553,57 @@ const MapPage = () => {
       {/* Reference image banner */}
       {traceImageUrl && viewMode === "edit" && (
         <div className="flex items-center justify-between px-4 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-800">
-          <span>Reference image loaded — draw over it with the pen tool</span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setTraceModalOpen(true);
-                setTraceMode("preview");
-              }}
-              className="underline hover:text-amber-900"
-            >
-              Try auto-trace instead
-            </button>
-            <button
-              onClick={() => {
-                canvasRef.current?.setReferenceOpacity(0);
-                setTraceImageUrl(null);
-              }}
-              className="underline hover:text-amber-900"
-            >
-              Remove image
-            </button>
-          </div>
+          {traceMethod === "auto" ? (
+            <>
+              <span>Auto-trace complete — use Draw to refine any edges</span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setRefOpacity(30);
+                    canvasRef.current?.setReferenceOpacity(30);
+                  }}
+                  className="underline hover:text-amber-900"
+                >
+                  Show reference image
+                </button>
+                <button
+                  onClick={() => {
+                    canvasRef.current?.setReferenceOpacity(0);
+                    setTraceImageUrl(null);
+                    setTraceMethod(null);
+                  }}
+                  className="underline hover:text-amber-900"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <span>Reference image loaded — draw over it with the pen tool</span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setTraceModalOpen(true);
+                    setTraceMode("preview");
+                  }}
+                  className="underline hover:text-amber-900"
+                >
+                  Try auto-trace instead
+                </button>
+                <button
+                  onClick={() => {
+                    canvasRef.current?.setReferenceOpacity(0);
+                    setTraceImageUrl(null);
+                    setTraceMethod(null);
+                  }}
+                  className="underline hover:text-amber-900"
+                >
+                  Remove image
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
