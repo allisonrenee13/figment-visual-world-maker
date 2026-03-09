@@ -787,7 +787,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             const { ActiveSelection } = await import("fabric");
             const sel = new ActiveSelection(allObjs, { canvas });
             canvas.setActiveObject(sel);
-            sel.center();
+            (sel as any).center();
             canvas.discardActiveObject();
             canvas.requestRenderAll();
             saveState();
