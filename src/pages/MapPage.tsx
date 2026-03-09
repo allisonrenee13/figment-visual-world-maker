@@ -500,21 +500,12 @@ const MapPage = () => {
             <>
               <Button
                 size="sm"
-                variant={activeTool === "pen" ? "default" : "outline"}
-                onClick={() => toggleTool("pen")}
+                variant={drawMode ? "default" : "outline"}
+                onClick={toggleDrawMode}
                 className="text-xs h-8"
               >
                 <Pencil className="h-3.5 w-3.5" />
                 <span className="hidden md:inline">Draw</span>
-              </Button>
-              <Button
-                size="sm"
-                variant={activeTool === "eraser" ? "default" : "outline"}
-                onClick={() => toggleTool("eraser")}
-                className="text-xs h-8"
-              >
-                <Eraser className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">Eraser</span>
               </Button>
               <Button
                 size="sm"
@@ -524,14 +515,6 @@ const MapPage = () => {
               >
                 <MapPin className="h-3.5 w-3.5" />
                 <span className="hidden md:inline">Pin</span>
-              </Button>
-              <Button
-                size="sm"
-                variant={showStylePanel ? "default" : "outline"}
-                onClick={openStylePanel}
-                className="text-xs h-8"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
               </Button>
               <Button
                 size="sm"
@@ -819,14 +802,11 @@ const MapPage = () => {
           )}
         </div>
 
-        {/* Right style panel */}
-        {showStylePanel && (
-          <div className="w-72 border-l border-border bg-card flex flex-col overflow-y-auto">
+        {/* Right style panel — visible when drawMode is on */}
+        {drawMode && viewMode === "edit" && (
+          <div className="hidden md:flex w-72 border-l border-border bg-card flex-col overflow-y-auto transition-all">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Style</p>
-              <button onClick={() => setShowStylePanel(false)} className="text-muted-foreground hover:text-foreground">
-                <X className="h-3.5 w-3.5" />
-              </button>
             </div>
             <div className="p-4">
               <StylePreferencesPanel
