@@ -413,8 +413,12 @@ const MapPage = () => {
 
         setCanvasStarted(true);
         setTraceMethod("auto");
+        setRefOpacity(0);
         setTimeout(() => {
           canvasRef.current?.loadSVG(svgString);
+          setTimeout(() => {
+            canvasRef.current?.addReferenceImage(traceImageUrl!, 0);
+          }, 200);
         }, 300);
       }, 50);
     };
@@ -559,12 +563,17 @@ const MapPage = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => {
-                    setRefOpacity(30);
-                    canvasRef.current?.setReferenceOpacity(30);
+                    if (refOpacity > 0) {
+                      setRefOpacity(0);
+                      canvasRef.current?.setReferenceOpacity(0);
+                    } else {
+                      setRefOpacity(30);
+                      canvasRef.current?.setReferenceOpacity(30);
+                    }
                   }}
                   className="underline hover:text-amber-900"
                 >
-                  Show reference image
+                  {refOpacity > 0 ? "Hide reference image" : "Show reference image"}
                 </button>
                 <button
                   onClick={() => {
