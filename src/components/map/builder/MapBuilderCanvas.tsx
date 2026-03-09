@@ -40,6 +40,7 @@ export interface MapCanvasHandle {
   setPenWidth: (width: number) => void;
   setEraserSize: (size: number) => void;
   applyStrokeWeightToAll: (weight: number) => void;
+  refreshTool: () => void;
 }
 
 interface MapBuilderCanvasProps {
