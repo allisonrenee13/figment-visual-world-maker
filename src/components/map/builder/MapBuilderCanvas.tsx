@@ -37,7 +37,6 @@ export interface MapCanvasHandle {
   getNodeCount: () => number;
   getObjectCount: () => number;
   setBrushWidth: (width: number) => void;
-  centerAllAndCapture: (callback: (svg: string) => void) => Promise<void>;
 }
 
 interface MapBuilderCanvasProps {
@@ -134,6 +133,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           width: actualWidth,
           height: actualHeight,
           selection: false,
+          selectionColor: "rgba(99, 102, 241, 0.05)",
+          selectionBorderColor: "rgba(99, 102, 241, 0.4)",
+          selectionLineWidth: 1,
         });
 
         fabricRef.current = canvas;
@@ -377,6 +379,10 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         return;
       }
 
+      // Deselect objects when switching away from select
+      canvas.discardActiveObject();
+      canvas.renderAll();
+
       switch (activeTool) {
         case "pen": {
           // Assign brush BEFORE enabling drawing mode
@@ -399,12 +405,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               obj.evented = true;
               obj.hasControls = true;
               obj.hasBorders = true;
-              (obj as any).lockUniScaling = false;
-              obj.lockScalingX = false;
-              obj.lockScalingY = false;
-              obj.setCoords();
             }
           });
+          canvas.discardActiveObject();
           canvas.on("object:modified", () => saveState());
           canvas.on("mouse:up", () => saveState());
           canvas.renderAll();
@@ -486,10 +489,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               obj.evented = true;
               obj.hasBorders = true;
               obj.hasControls = true;
-              obj.cornerStyle = "circle";
-              obj.cornerColor = "#C9A84C";
+              obj.borderColor = "#6366f1";
+              obj.borderScaleFactor = 1;
+              obj.cornerColor = "#6366f1";
+              obj.cornerStrokeColor = "#ffffff";
               obj.cornerSize = 8;
               obj.transparentCorners = false;
+              obj.selectionBackgroundColor = "transparent";
             }
           });
           canvas.on("mouse:up", () => saveState());
@@ -705,50 +711,6 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           `${w} ${h}" width="100%" height="auto">`
         );
       },
-      centerAllAndCapture: async (callback: (svg: string) => void) => {
-        const canvas = fabricRef.current;
-        if (!canvas) return;
-
-        const objects = canvas.getObjects().filter(
-          o => !(o as any).excludeFromExport
-        );
-        if (objects.length === 0) return;
-
-        // Save original positions
-        const originals = objects.map(o => ({
-          obj: o,
-          left: o.left,
-          top: o.top,
-        }));
-
-        // Create temp active selection to get group bounds
-        const { ActiveSelection } = await import("fabric");
-        const sel = new ActiveSelection(objects, { canvas });
-        canvas.setActiveObject(sel);
-
-        // Move selection to center of canvas
-        (sel as any).center();
-        sel.setCoords();
-        canvas.discardActiveObject();
-        canvas.renderAll();
-
-        // Small delay for render to settle
-        await new Promise(r => setTimeout(r, 50));
-
-        // Export SVG
-        const svg = canvas.toSVG()
-          .replace(/width="[\d.]+(?:px)?"/, 'width="100%"')
-          .replace(/height="[\d.]+(?:px)?"/, 'height="auto"');
-
-        callback(svg);
-
-        // Restore original positions
-        originals.forEach(({ obj, left, top }) => {
-          obj.set({ left, top });
-          obj.setCoords();
-        });
-        canvas.renderAll();
-      },
       getPNG: () => fabricRef.current?.toDataURL({ format: "png", quality: 1, multiplier: 2 }) ?? "",
       loadSVG: async (svgString: string) => {
         const canvas = fabricRef.current;
@@ -850,10 +812,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               hasControls: true,
               hasBorders: true,
               lockUniScaling: false,
-              cornerStyle: "circle" as any,
-              cornerColor: "#C9A84C",
-              cornerSize: 10,
+              borderColor: "#6366f1",
+              borderScaleFactor: 1,
+              cornerColor: "#6366f1",
+              cornerStrokeColor: "#ffffff",
+              cornerSize: 8,
               transparentCorners: false,
+              selectionBackgroundColor: "transparent",
             });
             obj.setCoords();
             canvas.add(obj);
