@@ -391,14 +391,14 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           canvas.selection = true;
           canvas.defaultCursor = "default";
           canvas.getObjects().forEach((obj) => {
-            if (!obj.excludeFromExport && !(obj instanceof FabricImage)) {
+            if (!obj.excludeFromExport) {
               obj.selectable = true;
               obj.evented = true;
               obj.hasControls = true;
               obj.hasBorders = true;
               obj.cornerStyle = "circle";
               obj.cornerColor = "#C9A84C";
-              obj.cornerSize = 8;
+              obj.cornerSize = 10;
               obj.transparentCorners = false;
             }
           });
@@ -738,11 +738,19 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             evented: true,
             hasControls: true,
             hasBorders: true,
-            cornerStyle: "circle",
+            lockUniScaling: false,
+            cornerStyle: "circle" as any,
             cornerColor: "#C9A84C",
-            cornerSize: 8,
+            cornerSize: 10,
             transparentCorners: false,
           });
+          // Scale to fit canvas with padding
+          const scale = Math.min(
+            (canvas.width! * 0.8) / (group.width || 1),
+            (canvas.height! * 0.8) / (group.height || 1)
+          );
+          group.scale(scale);
+          group.center();
           canvas.add(group);
           canvas.setActiveObject(group);
           canvas.renderAll();
@@ -786,19 +794,22 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         if (!canvas) return;
         FabricImage.fromURL(url).then((img) => {
           if (!img) return;
+          const maxW = 200;
+          const scale = maxW / (img.width || maxW);
           img.set({
-            opacity: opacity / 100, selectable: false, evented: false,
-            scaleX: canvasWidth / (img.width || canvasWidth),
-            scaleY: canvasHeight / (img.height || canvasHeight),
-            excludeFromExport: true,
+            opacity: opacity / 100,
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            scaleX: scale,
+            scaleY: scale,
+            left: (canvas.width || 800) - maxW - 20,
+            top: (canvas.height || 600) - (img.height || 200) * scale - 20,
+            data: { isReferenceImage: true },
           });
           canvas.add(img);
-          canvas.sendObjectToBack(img);
-          canvas.getObjects().forEach((obj) => {
-            if (obj.excludeFromExport && !(obj instanceof FabricImage)) canvas.sendObjectToBack(obj);
-          });
-          refImageRef.current = img;
           canvas.renderAll();
+          refImageRef.current = img;
         });
       },
       setReferenceOpacity: (opacity: number) => {
