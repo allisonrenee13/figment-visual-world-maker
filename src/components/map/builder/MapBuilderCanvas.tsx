@@ -726,6 +726,31 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           isBusy.current = false;
         }
       },
+      addTraceAsObject: async (svgString: string) => {
+        const canvas = fabricRef.current;
+        if (!canvas) return;
+        try {
+          const result = await loadSVGFromString(svgString);
+          const objects = result.objects.filter((obj): obj is FabricObject => obj !== null);
+          if (objects.length === 0) return;
+          const group = new Group(objects, {
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
+            cornerStyle: "circle",
+            cornerColor: "#C9A84C",
+            cornerSize: 8,
+            transparentCorners: false,
+          });
+          canvas.add(group);
+          canvas.setActiveObject(group);
+          canvas.renderAll();
+          saveState();
+        } catch (err) {
+          console.error("addTraceAsObject failed:", err);
+        }
+      },
       clear: () => {
         const canvas = fabricRef.current;
         if (!canvas) return;
