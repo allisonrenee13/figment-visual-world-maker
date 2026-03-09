@@ -540,8 +540,8 @@ const MapPage = () => {
       {traceImageUrl && viewMode === "edit" && (
         <div className="flex items-center justify-between px-4 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-800">
           {traceMethod === "auto" ? (
-            <>
-              <span>Auto-trace complete — use Draw to refine any edges</span>
+             <>
+              <span>Auto-trace complete — use Draw to refine and stylize. Pin to add locations.</span>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => {
