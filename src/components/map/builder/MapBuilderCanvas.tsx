@@ -738,7 +738,6 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             evented: true,
             hasControls: true,
             hasBorders: true,
-            lockUniScaling: false,
             cornerStyle: "circle" as any,
             cornerColor: "#C9A84C",
             cornerSize: 10,
@@ -750,7 +749,10 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
             (canvas.height! * 0.8) / (group.height || 1)
           );
           group.scale(scale);
-          group.center();
+          group.set({
+            left: (canvas.width! - (group.width || 0) * scale) / 2,
+            top: (canvas.height! - (group.height || 0) * scale) / 2,
+          });
           canvas.add(group);
           canvas.setActiveObject(group);
           canvas.renderAll();
