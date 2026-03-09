@@ -24,6 +24,7 @@ const MapPage = () => {
   const [showPinLayer, setShowPinLayer] = useState(true);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [stylePrefs, setStylePrefs] = useState<StylePreferences>(defaultStylePreferences);
+  const [viewMode, setViewMode] = useState<"edit" | "saved">("edit");
 
   const [placingPin, setPlacingPin] = useState(false);
   const [movingPinId, setMovingPinId] = useState<string | null>(null);
@@ -108,6 +109,7 @@ const MapPage = () => {
     if (canvasRef.current) {
       const svg = canvasRef.current.getSVG();
       setSavedSVG(svg);
+      setViewMode("saved");
       toast.success("Map saved successfully");
     }
   };
@@ -134,11 +136,29 @@ const MapPage = () => {
     <div className="h-full flex flex-col">
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 md:px-6 py-3 border-b border-border">
-        <h2 className="font-serif font-semibold text-sm md:text-base">
-          {currentProject.title}
-        </h2>
+        <div className="flex items-center gap-3">
+          <h2 className="font-serif font-semibold text-sm md:text-base">
+            {currentProject.title}
+          </h2>
+          {hasMap && (
+            <div className="flex items-center bg-muted rounded-lg p-0.5 text-xs">
+              <button
+                onClick={() => setViewMode("edit")}
+                className={`px-3 py-1 rounded-md transition-all ${viewMode === "edit" ? "bg-background shadow-sm font-medium" : "text-muted-foreground"}`}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setViewMode("saved")}
+                className={`px-3 py-1 rounded-md transition-all ${viewMode === "saved" ? "bg-background shadow-sm font-medium" : "text-muted-foreground"}`}
+              >
+                Saved
+              </button>
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-1.5">
-          {showCanvas && (
+          {showCanvas && viewMode === "edit" && (
             <>
               <Button
                 size="sm"
