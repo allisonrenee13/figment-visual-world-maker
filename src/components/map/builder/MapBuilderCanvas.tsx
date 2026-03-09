@@ -26,7 +26,7 @@ export interface MapCanvasHandle {
   getSVG: () => string;
   getPNG: () => string;
   loadSVG: (svg: string) => void;
-  addTraceAsObject: (svg: string) => void;
+  
   clear: () => void;
   undo: () => void;
   redo: () => void;
