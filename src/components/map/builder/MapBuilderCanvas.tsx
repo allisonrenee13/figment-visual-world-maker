@@ -809,10 +809,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
               hasControls: true,
               hasBorders: true,
               lockUniScaling: false,
-              cornerStyle: "circle" as any,
-              cornerColor: "#C9A84C",
-              cornerSize: 10,
+              borderColor: "#6366f1",
+              borderScaleFactor: 1,
+              cornerColor: "#6366f1",
+              cornerStrokeColor: "#ffffff",
+              cornerSize: 8,
               transparentCorners: false,
+              selectionBackgroundColor: "transparent",
             });
             obj.setCoords();
             canvas.add(obj);
