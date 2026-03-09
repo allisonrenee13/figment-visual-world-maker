@@ -732,45 +732,48 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           const objects = result.objects.filter((obj): obj is FabricObject => obj !== null);
           if (objects.length === 0) return;
 
-          // Find bounding box of all objects together
-          let minX = Infinity, minY = Infinity,
-              maxX = -Infinity, maxY = -Infinity;
-          objects.forEach(obj => {
-            const b = obj.getBoundingRect();
-            minX = Math.min(minX, b.left);
-            minY = Math.min(minY, b.top);
-            maxX = Math.max(maxX, b.left + b.width);
-            maxY = Math.max(maxY, b.top + b.height);
-          });
-          const groupW = maxX - minX || 1;
-          const groupH = maxY - minY || 1;
+          // Temporary group just for scaling/centering
+          const tempGroup = new fabric.Group([...objects]);
           const scale = Math.min(
-            (canvas.width! * 0.8) / groupW,
-            (canvas.height! * 0.8) / groupH
+            (canvas.width! * 0.8) / tempGroup.width!,
+            (canvas.height! * 0.8) / tempGroup.height!
           );
-          const offsetX = (canvas.width! - groupW * scale) / 2 - minX * scale;
-          const offsetY = (canvas.height! - groupH * scale) / 2 - minY * scale;
+          tempGroup.set({ scaleX: scale, scaleY: scale });
+          tempGroup.center();
 
-          objects.forEach(obj => {
+          // Get the final transform matrix before ungrouping
+          const groupMatrix = tempGroup.calcTransformMatrix();
+          const items = tempGroup.getObjects();
+
+          items.forEach(obj => {
+            const objMatrix = obj.calcTransformMatrix();
+            const finalMatrix = fabric.util.multiplyTransformMatrices(
+              groupMatrix, objMatrix
+            );
+            const decomposed = fabric.util.qrDecompose(finalMatrix);
+
             obj.set({
+              left: decomposed.translateX,
+              top: decomposed.translateY,
+              scaleX: decomposed.scaleX,
+              scaleY: decomposed.scaleY,
+              angle: decomposed.angle,
               selectable: true,
               evented: true,
               hasControls: true,
               hasBorders: true,
-              lockScalingX: false,
-              lockScalingY: false,
+              lockUniScaling: false,
               cornerStyle: "circle" as any,
               cornerColor: "#C9A84C",
               cornerSize: 10,
               transparentCorners: false,
-              scaleX: (obj.scaleX || 1) * scale,
-              scaleY: (obj.scaleY || 1) * scale,
-              left: (obj.left || 0) * scale + offsetX,
-              top: (obj.top || 0) * scale + offsetY,
             });
+            obj.setCoords();
             canvas.add(obj);
           });
 
+          tempGroup.destroy();
+          canvas.discardActiveObject();
           canvas.renderAll();
           saveState();
         } catch (err) {
