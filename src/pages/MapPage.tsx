@@ -594,11 +594,11 @@ const MapPage = () => {
 
       {/* Main area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left toolbar — always visible in edit mode */}
-        {viewMode === "edit" && (
+        {/* Left toolbar — visible when drawMode is on */}
+        {drawMode && viewMode === "edit" && (
           <div className="hidden md:flex flex-col w-12 border-r border-border bg-muted/30 items-center py-3 gap-1.5">
             <button
-              onClick={() => { if (!canvasStarted) { setCanvasStarted(true); } setActiveTool("select"); }}
+              onClick={() => setActiveTool("select")}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                 activeTool === "select" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
               }`}
@@ -607,7 +607,7 @@ const MapPage = () => {
               <MousePointer2 className="h-4 w-4" />
             </button>
             <button
-              onClick={() => { if (!canvasStarted) handleStartDraw(); else toggleTool("pen"); }}
+              onClick={() => setActiveTool("pen")}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                 activeTool === "pen" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
               }`}
@@ -616,7 +616,7 @@ const MapPage = () => {
               <Pencil className="h-4 w-4" />
             </button>
             <button
-              onClick={() => { if (!canvasStarted) { setCanvasStarted(true); setActiveTool("eraser"); } else toggleTool("eraser"); }}
+              onClick={() => setActiveTool("eraser")}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                 activeTool === "eraser" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
               }`}
@@ -639,32 +639,21 @@ const MapPage = () => {
             >
               <TraceIcon />
             </button>
+            <div className="w-6 border-t border-border my-1" />
             {traceImageUrl && (
-              <>
-                <button
-                  onClick={() => {
-                    const newOpacity = refOpacity === 0 ? 30 : 0;
-                    setRefOpacity(newOpacity);
-                    canvasRef.current?.setReferenceOpacity(newOpacity);
-                  }}
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                    refOpacity > 0 ? "bg-muted text-foreground" : "text-muted-foreground/40 hover:text-foreground"
-                  }`}
-                  title={refOpacity > 0 ? "Hide reference image" : "Show reference image"}
-                >
-                  {refOpacity > 0 ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                </button>
-                <button
-                  onClick={() => {
-                    setTraceModalOpen(true);
-                    setTraceMode("choose");
-                  }}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  title="Add another trace"
-                >
-                  <Upload className="h-4 w-4" />
-                </button>
-              </>
+              <button
+                onClick={() => {
+                  const newOpacity = refOpacity === 0 ? 30 : 0;
+                  setRefOpacity(newOpacity);
+                  canvasRef.current?.setReferenceOpacity(newOpacity);
+                }}
+                className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                  refOpacity > 0 ? "bg-muted text-foreground" : "text-muted-foreground/40 hover:text-foreground"
+                }`}
+                title={refOpacity > 0 ? "Hide reference image" : "Show reference image"}
+              >
+                {refOpacity > 0 ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              </button>
             )}
           </div>
         )}
