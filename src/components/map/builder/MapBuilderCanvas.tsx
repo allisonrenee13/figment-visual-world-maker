@@ -37,6 +37,7 @@ export interface MapCanvasHandle {
   getNodeCount: () => number;
   getObjectCount: () => number;
   setBrushWidth: (width: number) => void;
+  applyStrokeWeightToAll: (weight: number) => void;
 }
 
 interface MapBuilderCanvasProps {
