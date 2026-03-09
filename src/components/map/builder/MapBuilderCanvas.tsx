@@ -892,6 +892,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         }
       },
       setPenWidth: (width: number) => {
+        penWidthRef.current = width;
         const canvas = fabricRef.current;
         if (canvas?.freeDrawingBrush) {
           canvas.freeDrawingBrush.width = width;
