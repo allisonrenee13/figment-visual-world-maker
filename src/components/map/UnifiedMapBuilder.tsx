@@ -856,7 +856,7 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
                 {/* EDIT TAB */}
                 {activeTab === "edit" && (
                   <div className="flex-1 flex flex-col">
-                    <div className="p-5 space-y-4 flex-1 overflow-y-auto">
+                    <div className="p-3 md:p-5 space-y-4 flex-1 overflow-y-auto">
                       <div>
                         <h3 className="text-base font-serif font-semibold text-foreground mb-1">Edit your outline</h3>
                         <p className="text-xs text-muted-foreground">
