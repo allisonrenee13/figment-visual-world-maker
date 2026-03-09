@@ -414,13 +414,18 @@ const MapPage = () => {
           return;
         }
 
+        const isFirstTrace = !canvasStarted;
         setCanvasStarted(true);
         setTraceMethod("auto");
         setRefOpacity(0);
         setDrawMode(true);
         setActiveTool("select");
         setTimeout(() => {
-          canvasRef.current?.loadSVG(svgString);
+          if (isFirstTrace) {
+            canvasRef.current?.loadSVG(svgString);
+          } else {
+            canvasRef.current?.addSVGAsLayer(svgString);
+          }
           setTimeout(() => {
             canvasRef.current?.addReferenceImage(traceImageUrl!, 0);
           }, 200);
