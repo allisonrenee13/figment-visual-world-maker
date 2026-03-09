@@ -434,6 +434,12 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           canvas.isDrawingMode = false;
           canvas.selection = false;
           canvas.discardActiveObject();
+          canvas.getObjects().forEach(obj => {
+            if (!obj.excludeFromExport) {
+              obj.selectable = false;
+              obj.evented = false;
+            }
+          });
           canvas.renderAll();
           canvas.defaultCursor = "crosshair";
           let isErasing = false;
