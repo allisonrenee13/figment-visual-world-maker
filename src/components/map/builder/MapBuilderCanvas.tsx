@@ -364,6 +364,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
       canvas.off("mouse:down");
       canvas.off("mouse:move");
       canvas.off("mouse:up");
+      currentToolRef.current = activeTool;
       canvas.isDrawingMode = false;
       canvas.selection = false;
       canvas.defaultCursor = "default";
