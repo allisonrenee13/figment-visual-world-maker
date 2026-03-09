@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Pencil, Eraser, MapPin, SlidersHorizontal, Eye, EyeOff, Trash2, X, Layout } from "lucide-react";
+import { toast } from "sonner";
 import MapBuilderCanvas, { type MapCanvasHandle } from "@/components/map/builder/MapBuilderCanvas";
 import TemplatePicker from "@/components/map/builder/TemplatePicker";
+import StylePreferencesPanel from "@/components/map/builder/StylePreferencesPanel";
 import { defaultStylePreferences } from "@/components/map/builder/types";
 import type { ShapeTool, StylePreferences, MapTemplate } from "@/components/map/builder/types";
 
@@ -21,7 +23,7 @@ const MapPage = () => {
   const [showStylePanel, setShowStylePanel] = useState(false);
   const [showPinLayer, setShowPinLayer] = useState(true);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  const [stylePrefs] = useState<StylePreferences>(defaultStylePreferences);
+  const [stylePrefs, setStylePrefs] = useState<StylePreferences>(defaultStylePreferences);
 
   const [placingPin, setPlacingPin] = useState(false);
   const [movingPinId, setMovingPinId] = useState<string | null>(null);
@@ -88,14 +90,12 @@ const MapPage = () => {
   };
 
   const handleStartTrace = () => {
-    // Placeholder — will open trace flow later
     setCanvasStarted(true);
   };
 
   const handleTemplateSelect = (template: MapTemplate) => {
     setShowTemplatePicker(false);
     setCanvasStarted(true);
-    // Load template SVG into canvas after it mounts
     setTimeout(() => {
       if (canvasRef.current) {
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${template.viewBox}"><path d="${template.svgPath}" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
@@ -104,15 +104,31 @@ const MapPage = () => {
     }, 300);
   };
 
+  const handleSave = () => {
+    if (canvasRef.current) {
+      const svg = canvasRef.current.getSVG();
+      setSavedSVG(svg);
+      toast.success("Map saved successfully");
+    }
+  };
+
+  const openPinDrawer = () => {
+    setShowStylePanel(false);
+    setShowPinDrawer(true);
+  };
+
+  const openStylePanel = () => {
+    setShowPinDrawer(false);
+    setShowStylePanel((v) => !v);
+  };
+
+  const handleAddLocationFromDrawer = () => {
+    setShowPinDrawer(false);
+    setPlacingPin(true);
+  };
+
   const fabricTool: ShapeTool = activeTool === "pen" ? "pen" : activeTool === "eraser" ? "eraser" : "pan";
-
   const isPlacing = placingPin || !!movingPinId;
-
-  const displaySVG = savedSVG
-    ? savedSVG
-        .replace(/\swidth="[\d.]+(?:px)?"/, ' width="100%"')
-        .replace(/\sheight="[\d.]+(?:px)?"/, ' height="auto"')
-    : null;
 
   return (
     <div className="h-full flex flex-col">
@@ -144,10 +160,8 @@ const MapPage = () => {
               </Button>
               <Button
                 size="sm"
-                variant="outline"
-                onClick={() => {
-                  setPlacingPin(true);
-                }}
+                variant={showPinDrawer ? "default" : "outline"}
+                onClick={openPinDrawer}
                 className="text-xs h-8"
               >
                 <MapPin className="h-3.5 w-3.5" />
@@ -156,32 +170,20 @@ const MapPage = () => {
               <Button
                 size="sm"
                 variant={showStylePanel ? "default" : "outline"}
-                onClick={() => setShowStylePanel((v) => !v)}
+                onClick={openStylePanel}
                 className="text-xs h-8"
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" />
               </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowPinLayer((v) => !v)}
+                className="text-xs h-8"
+              >
+                {showPinLayer ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+              </Button>
             </>
-          )}
-          {hasMap && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setShowPinLayer((v) => !v)}
-              className="text-xs h-8"
-            >
-              {showPinLayer ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-            </Button>
-          )}
-          {showCanvas && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowPinDrawer(true)}
-              className="text-xs h-8"
-            >
-              Manage
-            </Button>
           )}
         </div>
       </div>
@@ -224,9 +226,7 @@ const MapPage = () => {
             >
               <Eraser className="h-4 w-4" />
             </button>
-
             <div className="w-6 border-t border-border my-1" />
-
             <button
               onClick={() => setShowTemplatePicker(true)}
               className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
@@ -247,7 +247,6 @@ const MapPage = () => {
         {/* Center canvas */}
         <div className="flex-1 flex flex-col items-center justify-center p-3 md:p-6 bg-muted/20 overflow-auto">
           {!showCanvas ? (
-            /* First-time creation UI */
             <div className="flex flex-col items-center justify-center gap-6 text-center max-w-md">
               <div>
                 <h3 className="font-serif text-lg font-semibold mb-1">Create your map</h3>
@@ -290,7 +289,6 @@ const MapPage = () => {
                 style={{ maxWidth: "900px", cursor: isPlacing ? "crosshair" : "default" }}
                 onClick={isPlacing ? handleMapClick : undefined}
               >
-                {/* Fabric canvas */}
                 <MapBuilderCanvas
                   ref={canvasRef}
                   stylePrefs={stylePrefs}
@@ -303,8 +301,6 @@ const MapPage = () => {
                     setPinName("");
                   }}
                 />
-
-                {/* Pin overlay */}
                 {showPinLayer && currentProject.pins?.map((pin) => (
                   <div
                     key={pin.id}
@@ -326,34 +322,31 @@ const MapPage = () => {
               </div>
 
               {/* Save button */}
-              <div className="mt-4">
-                <Button
-                  size="lg"
-                  className="px-8"
-                  onClick={() => {
-                    if (canvasRef.current) {
-                      const svg = canvasRef.current.getSVG();
-                      setSavedSVG(svg);
-                    }
-                  }}
-                >
-                  Save &amp; Render
+              <div className="mt-4 w-full" style={{ maxWidth: "900px" }}>
+                <Button className="w-full h-11" onClick={handleSave}>
+                  Save to Wrender
                 </Button>
               </div>
             </>
           )}
         </div>
 
-        {/* Right style panel placeholder */}
+        {/* Right style panel */}
         {showStylePanel && (
-          <div className="w-64 border-l border-border bg-card p-4 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
+          <div className="w-72 border-l border-border bg-card flex flex-col overflow-y-auto">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Style</p>
               <button onClick={() => setShowStylePanel(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-            <p className="text-xs text-muted-foreground italic">Style controls coming soon</p>
+            <div className="p-4">
+              <StylePreferencesPanel
+                prefs={stylePrefs}
+                onChange={setStylePrefs}
+                forceExpanded
+              />
+            </div>
           </div>
         )}
       </div>
@@ -387,39 +380,63 @@ const MapPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Manage Pins Drawer */}
+      {/* Pin drawer backdrop */}
       {showPinDrawer && (
         <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setShowPinDrawer(false)} />
       )}
-      <div className={`fixed inset-y-0 right-0 z-50 w-full md:w-[360px] bg-card border-l border-border shadow-xl flex flex-col transform transition-transform duration-300 ${showPinDrawer ? "translate-x-0" : "translate-x-full"}`}>
-        <div className="flex items-center justify-between px-3 md:px-5 py-4 border-b border-border">
-          <h3 className="font-serif font-semibold text-base">Manage Pins</h3>
+
+      {/* Pin drawer */}
+      <div className={`fixed inset-y-0 right-0 z-50 w-full md:w-[340px] bg-card border-l border-border shadow-xl flex flex-col transform transition-transform duration-300 ${showPinDrawer ? "translate-x-0" : "translate-x-full"}`}>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
+          <h3 className="font-serif font-semibold text-base">Locations</h3>
           <button onClick={() => setShowPinDrawer(false)} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-3 md:p-5 space-y-4">
-          {!currentProject.pins?.length && (
-            <p className="text-xs text-muted-foreground">No locations yet.</p>
-          )}
-          {currentProject.pins?.map((pin) => (
-            <div key={pin.id} className="flex items-center gap-3 py-2 group">
-              <div className="w-2.5 h-2.5 rounded-full bg-destructive flex-shrink-0" />
-              <span className="flex-1 text-sm truncate">{pin.title}</span>
-              <button
-                onClick={() => { setShowPinDrawer(false); setMovingPinId(pin.id); setPlacingPin(true); }}
-                className="text-xs text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity px-1"
-              >
-                Move
-              </button>
-              <button
-                onClick={() => removePin(pin.id)}
-                className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+        <div className="flex-1 overflow-y-auto p-4 space-y-5">
+          {/* Add Location CTA */}
+          <Button className="w-full" onClick={handleAddLocationFromDrawer}>
+            <MapPin className="h-4 w-4" />
+            Add Location
+          </Button>
+
+          {/* Pin list */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Pins</p>
+            {!currentProject.pins?.length && (
+              <p className="text-xs text-muted-foreground">No locations yet.</p>
+            )}
+            {currentProject.pins?.map((pin) => (
+              <div key={pin.id} className="flex items-center gap-3 py-2 group">
+                <div className="w-2.5 h-2.5 rounded-full bg-destructive flex-shrink-0" />
+                <span className="flex-1 text-sm truncate">{pin.title}</span>
+                <button
+                  onClick={() => { setShowPinDrawer(false); setMovingPinId(pin.id); setPlacingPin(true); }}
+                  className="text-xs text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity px-1"
+                >
+                  Move
+                </button>
+                <button
+                  onClick={() => removePin(pin.id)}
+                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Coming soon sections */}
+          <div className="space-y-3 pt-2 border-t border-border">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Events</p>
+              <p className="text-xs text-muted-foreground italic">Coming soon</p>
             </div>
-          ))}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Characters</p>
+              <p className="text-xs text-muted-foreground italic">Coming soon</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
