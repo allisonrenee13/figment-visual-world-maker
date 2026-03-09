@@ -37,6 +37,8 @@ export interface MapCanvasHandle {
   getNodeCount: () => number;
   getObjectCount: () => number;
   setBrushWidth: (width: number) => void;
+  setPenWidth: (width: number) => void;
+  setEraserSize: (size: number) => void;
   applyStrokeWeightToAll: (weight: number) => void;
 }
 
@@ -846,6 +848,15 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         if (canvas?.freeDrawingBrush) {
           canvas.freeDrawingBrush.width = width;
         }
+      },
+      setPenWidth: (width: number) => {
+        const canvas = fabricRef.current;
+        if (canvas?.freeDrawingBrush) {
+          canvas.freeDrawingBrush.width = width;
+        }
+      },
+      setEraserSize: (size: number) => {
+        eraserSizeRef.current = size;
       },
       applyStrokeWeightToAll: (weight: number) => {
         const canvas = fabricRef.current;
