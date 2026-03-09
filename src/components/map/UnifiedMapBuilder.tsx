@@ -59,7 +59,7 @@ function reachedTabs(phase: Phase): Set<TabId> {
 }
 
 const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp, initialSVG }: UnifiedMapBuilderProps) => {
-  const { currentProject, confirmMap, updateMapState, addPin } = useProject();
+  const { currentProject, confirmMap, updateMapState, addPin, removePin, updatePin } = useProject();
 
   const savedMapState = currentProject?.mapState;
 
@@ -121,6 +121,7 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
   const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [pinName, setPinName] = useState("");
+  const [movingPinId, setMovingPinId] = useState<string | null>(null);
 
   const hasShape = canvasState.paths.length > 0 || selectedTemplate !== null;
   const colors = backgroundColors[stylePrefs.background];
@@ -514,9 +515,15 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
                       const rect = e.currentTarget.getBoundingClientRect();
                       const x = ((e.clientX - rect.left) / rect.width) * 100;
                       const y = ((e.clientY - rect.top) / rect.height) * 100;
-                      setPendingPin({ x, y });
-                      setPlacingPin(false);
-                      setPinDialogOpen(true);
+                      if (movingPinId) {
+                        updatePin(movingPinId, { x, y });
+                        setMovingPinId(null);
+                        setPlacingPin(false);
+                      } else {
+                        setPendingPin({ x, y });
+                        setPlacingPin(false);
+                        setPinDialogOpen(true);
+                      }
                     }}
                   />
                 )}
@@ -531,6 +538,9 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
                     pointerEvents: "none"
                   }}>
                     <div className="w-3 h-3 rounded-full bg-destructive border-2 border-white shadow-sm" />
+                    <span className="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] font-medium whitespace-nowrap drop-shadow-sm bg-white/70 px-1 rounded">
+                      {pin.title}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -917,10 +927,46 @@ const UnifiedMapBuilder = ({ onConfirm, onRender, initialPhase: initialPhaseProp
                       <Button
                         variant="outline"
                         className={`w-full ${placingPin ? "border-primary text-primary" : ""}`}
-                        onClick={() => setPlacingPin(true)}
+                        onClick={() => { setMovingPinId(null); setPlacingPin(true); }}
                       >
                         {placingPin ? "Click on the map to place pin..." : "Place a Pin"}
                       </Button>
+
+                      <div className="space-y-3 pt-2 border-t border-border">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Events</p>
+                          <p className="text-xs text-muted-foreground italic">Coming soon</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Characters</p>
+                          <p className="text-xs text-muted-foreground italic">Coming soon</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-border">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Manage Pins</p>
+                        {currentProject?.pins?.length === 0 && (
+                          <p className="text-xs text-muted-foreground">No pins yet.</p>
+                        )}
+                        {currentProject?.pins?.map(pin => (
+                          <div key={pin.id} className="flex items-center gap-2 py-1.5 group">
+                            <div className="w-2 h-2 rounded-full bg-destructive flex-shrink-0" />
+                            <span className="flex-1 text-xs text-foreground truncate">{pin.title}</span>
+                            <button
+                              onClick={() => { setMovingPinId(pin.id); setPlacingPin(true); }}
+                              className="text-[10px] text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 px-1 border border-border rounded"
+                            >
+                              Move
+                            </button>
+                            <button
+                              onClick={() => removePin(pin.id)}
+                              className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 text-xs"
+                            >
+                              🗑
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Add tab footer */}
