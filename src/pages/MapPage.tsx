@@ -518,17 +518,17 @@ const MapPage = () => {
 
 
   const toggleDrawMode = () => {
-    if (drawMode) {
-      // Closing draw mode — switch to pan
-      setDrawMode(false);
+    if (activeMode === "draw") {
+      setActiveMode(null);
       setActiveTool(null);
     } else {
-      // Opening draw mode — close pin mode
+      // Close pin mode if active
       setShowPinDrawer(false);
       setPlacingPin(false);
       setMovingPinId(null);
+      canvasRef.current?.setCanvasInteractive(true);
       if (!canvasStarted) setCanvasStarted(true);
-      setDrawMode(true);
+      setActiveMode("draw");
       setActiveTool("select");
     }
   };
