@@ -765,11 +765,16 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         const h = Math.round(maxY - minY);
 
         const full = canvas.toSVG();
-        return full.replace(
+        const bgHex = canvasBgColors[stylePrefsRef.current.background] || "#FFFFFF";
+        const svgWithTag = full.replace(
           /(<svg\s)[^>]*(>)/,
           `<svg xmlns="http://www.w3.org/2000/svg" ` +
           `viewBox="${Math.round(minX)} ${Math.round(minY)} ` +
           `${w} ${h}" width="100%" height="100%">`
+        );
+        return svgWithTag.replace(
+          /(<svg[^>]*>)/,
+          `$1<rect width="100%" height="100%" fill="${bgHex}"/>`
         );
       },
       getPNG: () => fabricRef.current?.toDataURL({ format: "png", quality: 1, multiplier: 2 }) ?? "",
