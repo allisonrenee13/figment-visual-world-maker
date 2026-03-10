@@ -536,7 +536,19 @@ const MapPage = () => {
               <Button
                 size="sm"
                 variant={showPinDrawer ? "default" : "outline"}
-                onClick={() => setShowPinDrawer((v) => !v)}
+                onClick={() => {
+                  if (showPinDrawer) {
+                    setShowPinDrawer(false);
+                    setPlacingPin(false);
+                    setMovingPinId(null);
+                    canvasRef.current?.setCanvasInteractive(true);
+                    setActiveTool("select");
+                  } else {
+                    setShowPinDrawer(true);
+                    canvasRef.current?.setCanvasInteractive(false);
+                    setActiveTool(null);
+                  }
+                }}
                 className="text-xs h-8"
               >
                 <MapPin className="h-3.5 w-3.5" />
