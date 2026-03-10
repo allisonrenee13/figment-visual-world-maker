@@ -93,6 +93,9 @@ const LocationsPage = () => {
             const eventCount = currentProject.pins.filter(
               (p) => p.location === loc.name || loc.name.includes(p.location)
             ).length;
+            const hasPin = currentProject.pins.some(
+              (p) => p.title === loc.name
+            );
             return (
               <div key={loc.id} className="border border-border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
                 <button
@@ -134,6 +137,20 @@ const LocationsPage = () => {
                     </div>
                   </div>
                 </button>
+                <div className="px-4 pb-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-[11px] h-7 w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/map?action=pin&locationId=${loc.id}`);
+                    }}
+                  >
+                    <MapPin className="h-3 w-3 mr-1" />
+                    {hasPin ? "Manage on map" : "Add to map"}
+                  </Button>
+                </div>
               </div>
             );
           })}
