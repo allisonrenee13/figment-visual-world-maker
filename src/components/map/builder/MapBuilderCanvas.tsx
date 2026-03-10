@@ -71,7 +71,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     const eraserSizeRef = useRef(eraserRadius ?? 24);
     const penWidthRef = useRef(brushWidth ?? 2);
     const currentToolRef = useRef<ShapeTool>(activeTool);
+    const stylePrefsRef = useRef<StylePreferences>(stylePrefs);
     const [toolRefreshCounter, setToolRefreshCounter] = useState(0);
+
+    // Keep stylePrefsRef in sync
+    useEffect(() => {
+      stylePrefsRef.current = stylePrefs;
+    }, [stylePrefs]);
 
     // Keep eraserSizeRef in sync
     useEffect(() => {
