@@ -1009,7 +1009,7 @@ const MapPage = () => {
             </div>
           </div>
         )}
-        {!showPinDrawer && drawMode && viewMode === "edit" && (
+        {activeMode === "draw" && viewMode === "edit" && (
           <div className="hidden md:flex w-72 border-l border-border bg-card flex-col overflow-y-auto">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Style</p>
