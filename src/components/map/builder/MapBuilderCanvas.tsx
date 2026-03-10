@@ -1010,7 +1010,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     return (
       <div
         ref={containerRef}
-        style={{ width: "100%", flex: 1, minHeight: 400 }}
+        style={{ width: "100%", flex: 1, minHeight: 400, background: canvasBgColors[stylePrefs.background] || "#FFFFFF" }}
       >
         <canvas ref={canvasElRef} style={{ display: "block" }} />
       </div>
