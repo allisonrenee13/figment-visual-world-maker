@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useProject } from "@/context/ProjectContext";
 import { Location } from "@/data/projects";
-import { MapPin, X, Plus, Image, PenTool } from "lucide-react";
+import { MapPin, X, Plus, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import BakeModal from "@/components/map/BakeModal";
+
 
 const locationTypes = ["Hotel", "House", "Landmark", "Club", "Green Space", "Waterfront", "Road", "Other"];
 
@@ -17,7 +17,7 @@ const LocationsPage = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [showBakeModal, setShowBakeModal] = useState(false);
+  
   const [form, setForm] = useState({ name: "", type: "Landmark", description: "", firstAppears: 1 });
   const navigate = useNavigate();
 
@@ -134,19 +134,6 @@ const LocationsPage = () => {
                     </div>
                   </div>
                 </button>
-                {loc.status === "pinned" && (
-                  <div className="px-4 pb-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-[11px] h-7 text-primary border-primary/30 hover:bg-primary/5"
-                      onClick={() => setShowBakeModal(true)}
-                    >
-                      <PenTool className="h-3 w-3 mr-1" />
-                      Bake into Map
-                    </Button>
-                  </div>
-                )}
               </div>
             );
           })}
@@ -230,18 +217,6 @@ const LocationsPage = () => {
             )}
           </div>
 
-          {selectedLocation.status === "pinned" && (
-            <button
-              onClick={() => {
-                setSelectedLocation(null);
-                setShowBakeModal(true);
-              }}
-              className="text-xs text-primary font-medium hover:underline flex items-center gap-1 mb-4"
-            >
-              <PenTool className="h-3 w-3" />
-              Bake into Map
-            </button>
-          )}
 
           <button
             onClick={() => {
@@ -296,8 +271,6 @@ const LocationsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Bake Modal */}
-      <BakeModal open={showBakeModal} onClose={() => setShowBakeModal(false)} />
     </div>
   );
 };
