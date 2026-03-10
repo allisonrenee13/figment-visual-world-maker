@@ -244,30 +244,6 @@ const MapViewMode = ({ onEditMap }: MapViewModeProps) => {
           </div>
         )}
 
-        {/* Floating bake pill */}
-        {unillustratedCount >= 2 && !pillDismissed && !pinDropMode && !showBakeModal && (
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 animate-in fade-in slide-in-from-bottom-3 duration-500">
-            <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-primary text-primary-foreground shadow-lg">
-              <span className="text-sm font-medium">
-                You have {unillustratedCount} locations ready to illustrate
-              </span>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-7 text-xs rounded-full"
-                onClick={() => setShowBakeModal(true)}
-              >
-                Bake into Map
-              </Button>
-              <button
-                onClick={() => setPillDismissed(true)}
-                className="text-primary-foreground/70 hover:text-primary-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Version strip */}
