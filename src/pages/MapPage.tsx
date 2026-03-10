@@ -268,7 +268,7 @@ const MapPage = () => {
   const [savedSVG, setSavedSVG] = useState<string | null>(null);
   const [canvasStarted, setCanvasStarted] = useState(false);
   const [activeTool, setActiveTool] = useState<CanvasTool>(null);
-  const [drawMode, setDrawMode] = useState(false);
+  const [activeMode, setActiveMode] = useState<"draw" | "pin" | null>(null);
   const [showPinDrawer, setShowPinDrawer] = useState(false);
   const [showPinLayer, setShowPinLayer] = useState(true);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
@@ -311,7 +311,8 @@ const MapPage = () => {
     // Check if this location already has a pin on the map
     const existingPin = currentProject.pins.find((p) => p.title === location.name);
 
-    // Open pin drawer and disable canvas
+    // Enter pin mode
+    setActiveMode("pin");
     setShowPinDrawer(true);
     setActiveTool(null);
     setTimeout(() => {
@@ -459,7 +460,7 @@ const MapPage = () => {
         setCanvasStarted(true);
         setTraceMethod("auto");
         setRefOpacity(0);
-        setDrawMode(true);
+        setActiveMode("draw");
         setActiveTool("select");
         setTimeout(() => {
           if (isFirstTrace) {
@@ -517,17 +518,17 @@ const MapPage = () => {
 
 
   const toggleDrawMode = () => {
-    if (drawMode) {
-      // Closing draw mode — switch to pan
-      setDrawMode(false);
+    if (activeMode === "draw") {
+      setActiveMode(null);
       setActiveTool(null);
     } else {
-      // Opening draw mode — close pin mode
+      // Close pin mode if active
       setShowPinDrawer(false);
       setPlacingPin(false);
       setMovingPinId(null);
+      canvasRef.current?.setCanvasInteractive(true);
       if (!canvasStarted) setCanvasStarted(true);
-      setDrawMode(true);
+      setActiveMode("draw");
       setActiveTool("select");
     }
   };
@@ -561,7 +562,7 @@ const MapPage = () => {
             <>
               <Button
                 size="sm"
-                variant={drawMode ? "default" : "outline"}
+                variant={activeMode === "draw" ? "default" : "outline"}
                 onClick={toggleDrawMode}
                 className="text-xs h-8"
               >
@@ -570,18 +571,19 @@ const MapPage = () => {
               </Button>
               <Button
                 size="sm"
-                variant={showPinDrawer ? "default" : "outline"}
+                variant={activeMode === "pin" ? "default" : "outline"}
                 onClick={() => {
-                  if (showPinDrawer) {
+                  if (activeMode === "pin") {
+                    setActiveMode(null);
                     setShowPinDrawer(false);
                     setPlacingPin(false);
                     setMovingPinId(null);
-                    canvasRef.current?.setCanvasInteractive(true);
-                    setActiveTool("select");
-                  } else {
-                    setShowPinDrawer(true);
                     canvasRef.current?.setCanvasInteractive(false);
+                  } else {
+                    setActiveMode("pin");
+                    setShowPinDrawer(true);
                     setActiveTool(null);
+                    canvasRef.current?.setCanvasInteractive(false);
                   }
                 }}
                 className="text-xs h-8"
@@ -660,7 +662,7 @@ const MapPage = () => {
       {/* Main area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left toolbar — visible when drawMode is on */}
-        {drawMode && viewMode === "edit" && (
+        {activeMode === "draw" && viewMode === "edit" && (
           <div className="hidden md:flex flex-col w-12 border-r border-border bg-muted/30 items-center py-3 gap-1.5">
             <button
               onClick={() => setActiveTool("select")}
@@ -955,11 +957,11 @@ const MapPage = () => {
         </div>
 
         {/* Right panel — Pin panel or Style panel */}
-        {showPinDrawer && viewMode === "edit" && (
+        {activeMode === "pin" && viewMode === "edit" && (
           <div className="hidden md:flex w-72 border-l border-border bg-card flex-col overflow-y-auto">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Locations</p>
-              <button onClick={() => { setShowPinDrawer(false); setPlacingPin(false); setMovingPinId(null); canvasRef.current?.setCanvasInteractive(true); setActiveTool("select"); }} className="text-muted-foreground hover:text-foreground">
+              <button onClick={() => { setActiveMode(null); setShowPinDrawer(false); setPlacingPin(false); setMovingPinId(null); canvasRef.current?.setCanvasInteractive(false); }} className="text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -1007,7 +1009,7 @@ const MapPage = () => {
             </div>
           </div>
         )}
-        {!showPinDrawer && drawMode && viewMode === "edit" && (
+        {activeMode === "draw" && viewMode === "edit" && (
           <div className="hidden md:flex w-72 border-l border-border bg-card flex-col overflow-y-auto">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Style</p>
