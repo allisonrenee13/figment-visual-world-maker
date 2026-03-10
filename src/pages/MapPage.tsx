@@ -487,7 +487,10 @@ const MapPage = () => {
       setDrawMode(false);
       setActiveTool(null);
     } else {
-      // Opening draw mode — default to select
+      // Opening draw mode — close pin mode
+      setShowPinDrawer(false);
+      setPlacingPin(false);
+      setMovingPinId(null);
       if (!canvasStarted) setCanvasStarted(true);
       setDrawMode(true);
       setActiveTool("select");
