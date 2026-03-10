@@ -311,7 +311,8 @@ const MapPage = () => {
     // Check if this location already has a pin on the map
     const existingPin = currentProject.pins.find((p) => p.title === location.name);
 
-    // Open pin drawer and disable canvas
+    // Enter pin mode
+    setActiveMode("pin");
     setShowPinDrawer(true);
     setActiveTool(null);
     setTimeout(() => {
