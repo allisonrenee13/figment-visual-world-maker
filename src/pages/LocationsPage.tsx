@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useProject } from "@/context/ProjectContext";
 import { Location } from "@/data/projects";
-import { MapPin, X, Plus, Image, PenTool } from "lucide-react";
+import { MapPin, X, Plus, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
