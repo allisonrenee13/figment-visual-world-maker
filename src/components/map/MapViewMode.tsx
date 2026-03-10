@@ -401,19 +401,6 @@ const MapViewMode = ({ onEditMap }: MapViewModeProps) => {
                   ))}
               </div>
 
-              {/* Bake into map link for pinned locations */}
-              {getLocationStatus(selectedPin.title) === "pinned" && (
-                <button
-                  onClick={() => {
-                    setSelectedPinId(null);
-                    setShowBakeModal(true);
-                  }}
-                  className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
-                >
-                  <PenTool className="h-3 w-3" />
-                  Bake into Map
-                </button>
-              )}
             </div>
 
             <div className="p-5 border-t border-border">
