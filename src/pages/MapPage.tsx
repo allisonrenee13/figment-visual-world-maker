@@ -549,14 +549,9 @@ const MapPage = () => {
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 md:px-6 py-3 border-b border-border">
         <div className="flex items-center gap-3">
-          <h2 className="font-serif font-semibold text-sm md:text-base">
-            {currentProject.title}
-          </h2>
-          {hasMap && viewMode === "saved" && (
-            <Button variant="outline" size="sm" onClick={() => setViewMode("edit")}>
-              Edit
-            </Button>
-          )}
+          {/* Project switcher — always shown */}
+          <ProjectSwitcher />
+          {/* Save Map — only when editing and canvas has content */}
           {viewMode === "edit" && canvasStarted && (
             <Button size="sm" onClick={handleSave}>
               Save Map
@@ -564,6 +559,11 @@ const MapPage = () => {
           )}
         </div>
         <div className="flex items-center gap-1.5">
+          {viewMode === "saved" && hasMap && (
+            <Button variant="outline" size="sm" onClick={() => setViewMode("edit")}>
+              Edit
+            </Button>
+          )}
           {showCanvas && viewMode === "edit" && (
             <>
               <Button
