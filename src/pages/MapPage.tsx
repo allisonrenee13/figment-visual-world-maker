@@ -460,7 +460,7 @@ const MapPage = () => {
         setCanvasStarted(true);
         setTraceMethod("auto");
         setRefOpacity(0);
-        setDrawMode(true);
+        setActiveMode("draw");
         setActiveTool("select");
         setTimeout(() => {
           if (isFirstTrace) {
