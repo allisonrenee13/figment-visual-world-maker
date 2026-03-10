@@ -324,6 +324,7 @@ const MapPage = () => {
     setPendingPin({ x, y });
     setPlacingPin(false);
     setPinName("");
+    setActiveTool("select");
   };
 
   const handleConfirmPin = () => {
@@ -493,6 +494,7 @@ const MapPage = () => {
   const handleAddLocationFromDrawer = () => {
     setShowPinDrawer(false);
     setPlacingPin(true);
+    setActiveTool(null);
   };
 
   const fabricTool: ShapeTool = activeTool === "pen" ? "pen" : activeTool === "eraser" ? "eraser" : activeTool === "select" ? "select" : "pan";
