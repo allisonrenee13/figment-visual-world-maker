@@ -841,7 +841,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         if (!canvas) return;
         const dots = canvas.getObjects().filter((o) => o.excludeFromExport);
         canvas.clear();
-        canvas.backgroundColor = colors.bg;
+        canvas.backgroundColor = canvasBgColors[stylePrefs.background] || "#FFFFFF";
         dots.forEach((d) => canvas.add(d));
         canvas.renderAll();
         saveState();
