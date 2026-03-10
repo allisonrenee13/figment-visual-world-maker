@@ -495,6 +495,7 @@ const MapPage = () => {
     setShowPinDrawer(false);
     setPlacingPin(true);
     setActiveTool(null);
+    canvasRef.current?.setCanvasInteractive(false);
   };
 
   const fabricTool: ShapeTool = activeTool === "pen" ? "pen" : activeTool === "eraser" ? "eraser" : activeTool === "select" ? "select" : "pan";
