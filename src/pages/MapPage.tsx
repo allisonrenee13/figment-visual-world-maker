@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Pencil, Eraser, MapPin, Eye, EyeOff, Trash2, X, LayoutTemplate, Scan, Loader2, Upload, MousePointer2, Undo2, Redo2 } from "lucide-react";
+import ProjectSwitcher from "@/components/ProjectSwitcher";
 import { toast } from "sonner";
 import MapBuilderCanvas, { type MapCanvasHandle } from "@/components/map/builder/MapBuilderCanvas";
 import TemplatePicker from "@/components/map/builder/TemplatePicker";
@@ -548,14 +549,9 @@ const MapPage = () => {
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 md:px-6 py-3 border-b border-border">
         <div className="flex items-center gap-3">
-          <h2 className="font-serif font-semibold text-sm md:text-base">
-            {currentProject.title}
-          </h2>
-          {hasMap && viewMode === "saved" && (
-            <Button variant="outline" size="sm" onClick={() => setViewMode("edit")}>
-              Edit
-            </Button>
-          )}
+          {/* Project switcher — always shown */}
+          <ProjectSwitcher />
+          {/* Save Map — only when editing and canvas has content */}
           {viewMode === "edit" && canvasStarted && (
             <Button size="sm" onClick={handleSave}>
               Save Map
@@ -563,6 +559,11 @@ const MapPage = () => {
           )}
         </div>
         <div className="flex items-center gap-1.5">
+          {viewMode === "saved" && hasMap && (
+            <Button variant="outline" size="sm" onClick={() => setViewMode("edit")}>
+              Edit
+            </Button>
+          )}
           {showCanvas && viewMode === "edit" && (
             <>
               <Button
