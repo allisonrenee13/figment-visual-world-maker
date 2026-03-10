@@ -784,8 +784,23 @@ const MapPage = () => {
                 ref={mapContainerRef}
                 className="relative w-full mx-auto border border-border rounded-xl overflow-hidden shadow-md"
                 style={{ maxWidth: "900px", cursor: isPlacing ? "crosshair" : "default" }}
-                onClick={isPlacing ? handleMapClick : undefined}
               >
+                {/* Click overlay for pin placement — sits above canvas */}
+                {isPlacing && (
+                  <div
+                    onClick={handleMapClick}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 20,
+                      cursor: "crosshair",
+                      pointerEvents: "all",
+                    }}
+                  />
+                )}
                 <MapBuilderCanvas
                   ref={canvasRef}
                   stylePrefs={stylePrefs}
