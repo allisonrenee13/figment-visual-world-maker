@@ -756,7 +756,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
           /(<svg\s)[^>]*(>)/,
           `<svg xmlns="http://www.w3.org/2000/svg" ` +
           `viewBox="${Math.round(minX)} ${Math.round(minY)} ` +
-          `${w} ${h}" width="100%" height="auto">`
+          `${w} ${h}" width="100%" height="100%">`
         );
       },
       getPNG: () => fabricRef.current?.toDataURL({ format: "png", quality: 1, multiplier: 2 }) ?? "",
