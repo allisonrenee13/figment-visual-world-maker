@@ -42,6 +42,7 @@ export interface MapCanvasHandle {
   setEraserSize: (size: number) => void;
   applyStrokeWeightToAll: (weight: number) => void;
   refreshTool: () => void;
+  setCanvasInteractive: (interactive: boolean) => void;
 }
 
 interface MapBuilderCanvasProps {
