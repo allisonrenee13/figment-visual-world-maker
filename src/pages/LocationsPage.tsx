@@ -17,7 +17,7 @@ const LocationsPage = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [showBakeModal, setShowBakeModal] = useState(false);
+  
   const [form, setForm] = useState({ name: "", type: "Landmark", description: "", firstAppears: 1 });
   const navigate = useNavigate();
 
