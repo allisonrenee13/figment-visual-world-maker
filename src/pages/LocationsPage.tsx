@@ -271,8 +271,6 @@ const LocationsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Bake Modal */}
-      <BakeModal open={showBakeModal} onClose={() => setShowBakeModal(false)} />
     </div>
   );
 };

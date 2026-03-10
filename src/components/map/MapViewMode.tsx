@@ -418,8 +418,6 @@ const MapViewMode = ({ onEditMap }: MapViewModeProps) => {
         )}
       </div>
 
-      {/* Bake Modal */}
-      <BakeModal open={showBakeModal} onClose={() => setShowBakeModal(false)} />
     </div>
   );
 };
