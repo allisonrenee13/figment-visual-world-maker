@@ -562,7 +562,7 @@ const MapPage = () => {
             <>
               <Button
                 size="sm"
-                variant={drawMode ? "default" : "outline"}
+                variant={activeMode === "draw" ? "default" : "outline"}
                 onClick={toggleDrawMode}
                 className="text-xs h-8"
               >
@@ -571,18 +571,19 @@ const MapPage = () => {
               </Button>
               <Button
                 size="sm"
-                variant={showPinDrawer ? "default" : "outline"}
+                variant={activeMode === "pin" ? "default" : "outline"}
                 onClick={() => {
-                  if (showPinDrawer) {
+                  if (activeMode === "pin") {
+                    setActiveMode(null);
                     setShowPinDrawer(false);
                     setPlacingPin(false);
                     setMovingPinId(null);
-                    canvasRef.current?.setCanvasInteractive(true);
-                    setActiveTool("select");
-                  } else {
-                    setShowPinDrawer(true);
                     canvasRef.current?.setCanvasInteractive(false);
+                  } else {
+                    setActiveMode("pin");
+                    setShowPinDrawer(true);
                     setActiveTool(null);
+                    canvasRef.current?.setCanvasInteractive(false);
                   }
                 }}
                 className="text-xs h-8"
