@@ -556,6 +556,11 @@ const MapPage = () => {
               Edit
             </Button>
           )}
+          {viewMode === "edit" && canvasStarted && (
+            <Button size="sm" onClick={handleSave}>
+              Save Map
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
           {showCanvas && viewMode === "edit" && (
@@ -888,11 +893,6 @@ const MapPage = () => {
               </div>
 
               {/* Save button */}
-              <div className="mt-4 w-full" style={{ maxWidth: "900px" }}>
-                <Button className="w-full h-11" onClick={handleSave}>
-                  Save Map
-                </Button>
-              </div>
             </div>
           )}
 
