@@ -34,7 +34,7 @@ const MapViewMode = ({ onEditMap }: MapViewModeProps) => {
   const [showLayers, setShowLayers] = useState(false);
   const [showVersionPanel, setShowVersionPanel] = useState(false);
   const [hoveredListPinId, setHoveredListPinId] = useState<string | null>(null);
-  const [showBakeModal, setShowBakeModal] = useState(false);
+  
   const [pillDismissed, setPillDismissed] = useState(false);
 
   const [dropPoint, setDropPoint] = useState<{ x: number; y: number } | null>(null);
