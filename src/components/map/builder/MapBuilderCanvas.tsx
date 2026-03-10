@@ -180,9 +180,9 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         const actualWidth = Math.min(Math.max(containerWidth, 400), canvasWidth);
         const actualHeight = Math.round(actualWidth * (canvasHeight / canvasWidth));
 
-        const canvas = new Canvas(canvasElRef.current!, {
+      const canvas = new Canvas(canvasElRef.current!, {
           isDrawingMode: false,
-          backgroundColor: colors.bg,
+          backgroundColor: canvasBgColors[stylePrefs.background] || "#FFFFFF",
           width: actualWidth,
           height: actualHeight,
           selection: false,
