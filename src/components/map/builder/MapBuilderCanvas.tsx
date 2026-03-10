@@ -89,6 +89,13 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     const colors = backgroundColors[stylePrefs.background];
     const sw = strokeWeightValues[stylePrefs.strokeWeight];
 
+    const canvasBgColors: Record<string, string> = {
+      white: "#FFFFFF",
+      cream: "#F5F0E8",
+      "aged-paper": "#E8DCC8",
+      dark: "#1a1a2e",
+    };
+
     // --- History ---
     const saveState = useCallback(() => {
       if (isBusy.current) return;
