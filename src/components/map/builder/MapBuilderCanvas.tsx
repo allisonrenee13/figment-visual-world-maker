@@ -311,7 +311,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     useEffect(() => {
       const canvas = fabricRef.current;
       if (!canvas) return;
-      canvas.backgroundColor = canvasBgColors[stylePrefs.background] || "#FFFFFF";
+      canvas.set("backgroundColor", canvasBgColors[stylePrefs.background] || "#FFFFFF");
       const lineStyle = stylePrefs.lineStyle;
       const getLineProps = () => {
         switch (lineStyle) {
@@ -347,7 +347,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
         canvas.freeDrawingBrush.color = lineProps.stroke;
         // Don't override brush width here — it's controlled by the weight selector via brushWidth prop
       }
-      canvas.renderAll();
+      canvas.requestRenderAll();
     }, [colors.bg, colors.stroke, sw, stylePrefs.lineStyle, stylePrefs.background]);
 
     // --- Path rebuild helper for sculpt and smooth ---
@@ -1010,7 +1010,7 @@ const MapBuilderCanvas = forwardRef<MapCanvasHandle, MapBuilderCanvasProps>(
     return (
       <div
         ref={containerRef}
-        style={{ width: "100%", flex: 1, minHeight: 400 }}
+        style={{ width: "100%", flex: 1, minHeight: 400, background: canvasBgColors[stylePrefs.background] || "#FFFFFF" }}
       >
         <canvas ref={canvasElRef} style={{ display: "block" }} />
       </div>
