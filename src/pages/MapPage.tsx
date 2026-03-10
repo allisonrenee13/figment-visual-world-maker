@@ -342,6 +342,8 @@ const MapPage = () => {
     });
     setPendingPin(null);
     setPinName("");
+    setShowPinDrawer(true);
+    canvasRef.current?.setCanvasInteractive(false);
   };
 
   const toggleTool = (tool: CanvasTool) => {
