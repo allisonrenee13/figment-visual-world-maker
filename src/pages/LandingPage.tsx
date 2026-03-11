@@ -303,7 +303,7 @@ export default function LandingPage() {
         </div>
         <div className="hidden sm:flex items-center gap-4">
           <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Sign in</a>
-          <Button className="bg-primary text-primary-foreground text-sm rounded-full px-5 h-9">Start free</Button>
+          <Button onClick={() => document.getElementById("landing-scroll")?.scrollTo({ top: 0, behavior: "smooth" })} className="bg-primary text-primary-foreground text-sm rounded-full px-5 h-9">Get early access</Button>
         </div>
         <button className="sm:hidden p-1" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
