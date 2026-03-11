@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { SeeneryLogo } from "@/components/SeeneryLogo";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Check, Menu, X } from "lucide-react";
+import heroCapeCodeMap from "@/assets/hero-cape-cod-map.webp";
 
 /* ───── Mini map sketches for demo cards ───── */
 const CapeCodSketch = () => (
