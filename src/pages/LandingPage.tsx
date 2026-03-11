@@ -153,6 +153,40 @@ function BookCard({ title, genre, setting, quote, sketch }: {
   );
 }
 
+/* ───── Email Capture ───── */
+function EmailCapture({ onSubmit, email, setEmail, state }: {
+  onSubmit: (e: React.FormEvent) => void;
+  email: string;
+  setEmail: (v: string) => void;
+  state: "idle" | "loading" | "success" | "error";
+}) {
+  if (state === "success") {
+    return (
+      <p className="text-sm text-secondary font-medium">
+        You're on the list! We'll email you when Wrender launches.
+      </p>
+    );
+  }
+  return (
+    <form onSubmit={onSubmit} className="flex flex-col sm:flex-row items-center gap-2 w-full max-w-md">
+      <input
+        type="email"
+        required
+        placeholder="@email.com"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        className="flex-1 h-11 px-4 rounded-full border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-secondary transition-colors"
+      />
+      <Button type="submit" disabled={state === "loading"} className="bg-primary text-primary-foreground text-sm rounded-full px-6 h-11">
+        {state === "loading" ? "Joining..." : "Join the waitlist"}
+      </Button>
+      {state === "error" && (
+        <p className="text-xs text-destructive">Something went wrong. Try again.</p>
+      )}
+    </form>
+  );
+}
+
 /* ───── Pricing Card ───── */
 function PricingCard({ name, price, period, features, cta, popular }: {
   name: string; price: string; period?: string; features: string[]; cta: string; popular?: boolean;
@@ -176,12 +210,15 @@ function PricingCard({ name, price, period, features, cta, popular }: {
           </li>
         ))}
       </ul>
-      <Button
-        variant={popular ? "default" : "outline"}
-        className={`w-full ${popular ? "bg-primary text-secondary font-medium" : ""}`}
-      >
+      <button
+        onClick={() => document.getElementById("landing-scroll")?.scrollTo({ top: 0, behavior: "smooth" })}
+        className={`w-full h-10 rounded-md text-sm font-medium transition-colors ${
+          popular
+            ? "bg-primary text-secondary"
+            : "border border-border bg-transparent text-foreground hover:bg-muted"
+        }`}>
         {cta}
-      </Button>
+      </button>
     </div>
   );
 }
