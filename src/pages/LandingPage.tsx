@@ -316,7 +316,7 @@ export default function LandingPage() {
           <button onClick={() => scrollTo("features")} className="text-sm text-muted-foreground text-left">Features</button>
           <button onClick={() => scrollTo("pricing")} className="text-sm text-muted-foreground text-left">Pricing</button>
           <a href="#" className="text-sm text-muted-foreground">Sign in</a>
-          <Button className="bg-primary text-primary-foreground text-sm rounded-full w-full h-9">Start free</Button>
+          <Button onClick={() => { setMobileMenuOpen(false); document.getElementById("landing-scroll")?.scrollTo({ top: 0, behavior: "smooth" }); }} className="bg-primary text-primary-foreground text-sm rounded-full w-full h-9">Get early access</Button>
         </div>
       )}
 
