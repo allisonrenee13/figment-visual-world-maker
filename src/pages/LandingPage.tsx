@@ -549,10 +549,15 @@ export default function LandingPage() {
 
       {/* ══ Section 11: Final CTA ══ */}
       <section className="py-24 px-6 text-center bg-[hsl(40,20%,97%)]">
-        <h2 className="font-serif text-3xl md:text-5xl font-semibold text-foreground mb-4">Ready to Wrender?</h2>
-        <p className="text-muted-foreground mb-8 max-w-xl mx-auto">Depict your story's location as a clean line drawing, see what is in your head, plan where everything happens, and write with clarity.</p>
-        <Button className="bg-primary text-secondary font-medium rounded-full px-10 h-12 text-base mb-3">Start visualising your world</Button>
-        
+        <h2 className="font-serif text-3xl md:text-5xl font-semibold text-foreground mb-4">
+          Be first to Wrender your world.
+        </h2>
+        <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+          Depict your story's location as a clean line drawing, see what is in your head, plan where everything happens, and write with clarity.
+        </p>
+        <div className="flex justify-center">
+          <EmailCapture onSubmit={submitWaitlist} email={email} setEmail={setEmail} state={submitState} />
+        </div>
       </section>
 
       {/* ══ Section 12: Footer ══ */}
